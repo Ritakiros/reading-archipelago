@@ -151,6 +151,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.25;
 .modal p{margin:0;color:var(--muted)}
 .mrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .btn{border:0;border-radius:999px;padding:8px 18px;cursor:pointer;background:var(--ink);color:var(--paper);font-weight:500}
+.btn.bkgo{display:block;text-align:center;text-decoration:none;padding:12px 18px;font-size:15px;background:var(--accent);color:var(--accent-ink);font-weight:700;overflow-wrap:anywhere}
 .btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
 .opts{display:grid;gap:8px}
 .opts button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer}
@@ -243,8 +244,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.25;
       <h2>把閱讀，連起來。</h2>
       <div class="meta" id="indexMeta"></div>
     </div>
-    <form class="bookform" id="bookForm" autocomplete="off"><label for="bookQ">輸入你喜歡的書，航向有館藏的島</label>
-      <div class="bfrow"><input id="bookQ" type="search" placeholder="書名或 ISBN，例如：原子習慣" enterkeyhint="go"><button class="btn" type="submit">⛵ 啟航</button></div><span class="hint" id="bookHint">會到北市圖館藏系統查詢各館冊數。</span></form>
+    <form class="bookform" id="bookForm" autocomplete="off"><label for="bookQ" id="bookLabel">輸入書名或 ISBN，到北市圖館藏查詢</label>
+      <div class="bfrow"><input id="bookQ" type="search" placeholder="書名或 ISBN，例如：原子習慣" enterkeyhint="go"><button class="btn" type="submit">⛵ 啟航</button></div><span class="hint" id="bookHint">會附上北市圖館藏查詢連結。</span></form>
     <button class="quizcard" id="quizCard" type="button"><div><b>你是哪一種讀者？</b><span>四個問題，找到最適合你的那座島和分館。</span></div><i>›</i></button>
     <input class="search" id="q" type="search" placeholder="搜尋分館、特色、地址：漫畫、天文、萬華…" aria-label="搜尋分館或主題">
     <div class="tabs"><button type="button" id="tab-isl" aria-pressed="true">島嶼</button><button type="button" id="tab-open" aria-pressed="false">現在開放</button><button type="button" id="tab-svc" aria-pressed="false">服務</button></div>
@@ -786,7 +787,8 @@ function renderQuiz(){
 }
 const TOUR=[['Hello, Taipei / 01','每座島是一個行政區','14 座六角形小島拼成臺北，島上每棟小房子是一個北市圖服務據點，共 '+TOTAL+' 處。點一座島，或從清單挑一個。'],
  ['Live / 02','燈亮著，就是開著','屋頂小燈依官網開館時間即時變色：綠色開放、黃色快閉館、青色夜間自助、灰色休息。插小紅旗的館有近期活動。'],
- ['Book / 03','輸入一本書，航向有它的島','在清單上方輸入喜歡的書，會到北市圖館藏系統查出哪幾館有、現在在不在架上，再派一艘金色小船開過去。「服務」分頁可以依設施找館。']];
+ ['Book / 03','輸入一本書，到北市圖查館藏','在清單上方輸入書名或 ISBN，會附上北市圖館藏查詢的連結，到那邊看哪幾館有、在不在架上。書名有主題關鍵字（如漫畫、天文）時，也會推薦館藏特色相關的島。「服務」分頁可以依設施找館。']];
+const TOUR_HOST=['Book / 03','輸入一本書，航向有它的島','在清單上方輸入喜歡的書，會到北市圖館藏系統查出哪幾館有、現在在不在架上，再派一艘金色小船開過去。「服務」分頁可以依設施找館。'];
 let tk=0;
 function openTour(k){tk=k||0;$('scrim').hidden=false;const [e,h,p]=TOUR[tk];
   $('modal').innerHTML=`<div class="eyebrow">${esc(e)}</div><h3>${esc(h)}</h3><p>${esc(p)}</p><div class="mrow"><button class="btn ghost" type="button" id="ts">略過</button><div class="dots">${TOUR.map((_,j)=>`<i class="${j===tk?'on':''}"></i>`).join('')}</div><button class="btn" type="button" id="tn">${tk<TOUR.length-1?'下一步 →':'開始探索'}</button></div>`;
@@ -795,14 +797,18 @@ function endTour(){$('scrim').hidden=true;try{localStorage.setItem('ra-tour2','1
 
 /* ================= 找書航行 ================= */
 const CAT='https://book.tpml.edu.tw';
-const searchURL=q=>CAT+'/search?searchField='+(/^[\dXx-]{10,17}$/.test(q.trim())?'ISBN':'TI')+'&searchInput='+encodeURIComponent(q.trim());
+const isbnOf=q=>{const d=q.trim().replace(/[-\s]/g,'');return /^(\d{9}[\dXx]|\d{13})$/.test(d)?d.toUpperCase():''};
+const searchURL=q=>{const i=isbnOf(q);return CAT+'/search?searchField='+(i?'ISBN':'TI')+'&searchInput='+encodeURIComponent(i||q.trim())};
+const booksURL=q=>'https://search.books.com.tw/search/query/key/'+encodeURIComponent(isbnOf(q)||q.trim())+'/cat/all';
+const gbooksURL=q=>{const i=isbnOf(q);return 'https://www.google.com/search?tbm=bks&q='+encodeURIComponent(i?'isbn:'+i:q.trim())};
 const BK={busy:false,ctl:null,tab:null,mode:null,q:'',title:'',editions:[],pick:0,rows:[],by:[],steps:[],err:'',at:'',topic:null};
 const sleep=(ms,sig)=>new Promise((res,rej)=>{const h=setTimeout(res,ms);sig&&sig.addEventListener('abort',()=>{clearTimeout(h);rej({code:'cancelled'})},{once:true})});
 const txtOf=r=>{if(!r)return'';if(typeof r.payload==='string')return r.payload;return(r.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n')};
 let MCP=null,HOST=false,SAMPLE=null;
 (async()=>{try{MCP=await window.claude?.use?.('mcp');if(MCP){const l=await MCP.listTools().catch(()=>null);HOST=!!l?.servers?.some(s=>s.server==='host:claude_browser')}}catch(e){}
   try{SAMPLE=await window.claude?.use?.('sample')}catch(e){}
-  const h=$('bookHint');if(h)h.textContent=HOST?'會用你的 Claude 瀏覽器到北市圖館藏系統即時查詢各館冊數。':SAMPLE?'這個畫面無法連館藏系統，會依書的主題推薦島嶼，並附上館藏查詢連結。':'會附上北市圖館藏查詢連結，並用館藏特色推薦島嶼。'})();
+  const h=$('bookHint');if(h)h.textContent=HOST?'會用你的 Claude 瀏覽器到北市圖館藏系統即時查詢各館冊數。':SAMPLE?'這個畫面無法連館藏系統，會依書的主題推薦島嶼，並附上館藏查詢連結。':'會附上北市圖館藏查詢連結。'
+  if(HOST){const l=$('bookLabel');if(l)l.textContent='輸入你喜歡的書，航向有館藏的島';TOUR[2]=TOUR_HOST}})();
 async function host(tool,input,sig){return MCP.callTool('host:claude_browser',tool,input,{signal:sig})}
 /* 館藏地 → 據點 */
 const CORE=[];ISLANDS.forEach((I,i)=>I.b.forEach((b,bi)=>{const c=b.n.replace(/(先生紀念圖書館|紀念圖書館|分館替代服務處|分館|民眾閱覽室|兒童圖書館|數位圖書館|智慧圖書館|借還書工作站|圖書館)$/,'');CORE.push({c,i,bi,n:b.n})}));CORE.sort((a,b)=>b.c.length-a.c.length);
@@ -856,11 +862,24 @@ async function lookupTopic(q,sig){
   BK.topic={subject:String(ans?.subject||'').slice(0,120),picks:ok.slice(0,3)};S.bookHits={};ok.forEach(o=>S.bookHits[o.n]={...o,topic:1});tick();
   step(ok.length?'找到主題相近的島':'沒有找到合適的島');
 }
-function lookupLocal(q){BK.mode='topic';const hits=CORE.filter(c=>{const b=ISLANDS[c.i].b[c.bi];return b.f&&!b.closed&&(q.includes(b.f)||b.f.split('').filter(ch=>q.includes(ch)).length>=2)}).slice(0,3);
-  BK.topic={subject:'依書名文字比對館藏特色',picks:hits.map(h=>({...h,why:'館藏特色：'+ISLANDS[h.i].b[h.bi].f}))};S.bookHits={};hits.forEach(o=>S.bookHits[o.n]={...o,topic:1});tick()}
+/* 館藏特色關鍵字：只比對完整關鍵字（臺/台視為相同） */
+const FKW={'旅遊':['旅遊','旅行','遊記'],'家政':['家政','家事','收納','縫紉'],'中國文學':['中國文學','古典文學','唐詩','宋詞','詩經','紅樓夢','三國演義','西遊記','水滸傳'],
+ '禮俗':['禮俗','民俗','習俗','婚禮','節慶'],'企業管理':['企業管理','管理學','領導','創業','經營'],'勞工問題':['勞工','勞動'],'大眾傳播':['大眾傳播','傳播','新聞','媒體'],
+ '親職教育':['親職','教養','育兒','親子','繪本'],'美術':['美術','繪畫','素描','水彩','藝術史'],'漫畫':['漫畫','動漫'],'視障資料':['視障','點字'],'傳記':['傳記','自傳','回憶錄'],
+ '商品行銷':['行銷','廣告','品牌'],'飲食文化':['飲食','美食','料理','食譜','烹飪','甜點','咖啡'],'城市發展':['城市','都市'],'生活保健':['保健','健康','養生'],
+ '歐洲文化':['歐洲','法國','德國','義大利','英國','西班牙'],'天文':['天文','星空','宇宙','星座','太空'],'天文氣象':['天文','氣象','天氣','颱風','星空','宇宙'],
+ '園藝':['園藝','植物','花園','盆栽','種菜'],'生態保育':['生態','保育','野生動物','自然觀察'],'表演藝術':['表演藝術','戲劇','劇場','舞蹈'],
+ '體育':['體育','運動','棒球','籃球','足球','跑步','健身'],'動物':['動物','寵物','貓','狗','鳥類'],'社會福利':['社會福利','社工','長照'],'建築美學':['建築'],
+ '音樂':['音樂','樂理','鋼琴','吉他','爵士'],'客家文化':['客家'],'原住民族文化':['原住民','部落'],'科普':['科普','科學','物理','化學'],'學校教育':['學校教育','教學','教師'],
+ '法律':['法律','法學','民法','刑法','憲法'],'考試銓敘':['國考','高普考','公職','銓敘'],'大陸資料':['中國大陸','兩岸'],'茶藝':['茶藝','茶道','茶'],
+ '臺灣文學':['臺灣文學'],'鄉土文化':['鄉土'],'聽障資料':['聽障','手語'],'臺灣史':['臺灣史','臺灣歷史','日治'],'中國醫藥':['中醫','中藥','針灸','本草'],'臺北史蹟':['臺北史','古蹟','史蹟','艋舺']};
+function lookupLocal(q){BK.mode='topic';BK.local=true;const s=q.replace(/台/g,'臺');
+  const hits=CORE.map(c=>{const b=ISLANDS[c.i].b[c.bi];const k=b.f&&!b.closed?(FKW[b.f]||[b.f]).find(w=>s.includes(w)):null;return k?{...c,k}:null}).filter(Boolean)
+    .sort((a,b)=>b.k.length-a.k.length).slice(0,3);
+  BK.topic={subject:'',picks:hits.map(h=>({...h,why:'館藏特色：'+ISLANDS[h.i].b[h.bi].f}))};S.bookHits=hits.length?{}:null;hits.forEach(o=>S.bookHits[o.n]={...o,topic:1});tick()}
 async function startBook(q){
   q=q.trim();if(!q)return;if(BK.ctl)BK.ctl.abort();const ctl=new AbortController();BK.ctl=ctl;
-  Object.assign(BK,{busy:true,q,title:'',editions:[],rows:[],by:[],steps:[],err:'',topic:null,mode:HOST?'host':'topic'});S.bookHits=null;openBook();
+  Object.assign(BK,{busy:true,q,title:'',editions:[],rows:[],by:[],steps:[],err:'',topic:null,local:false,mode:HOST?'host':'topic'});S.bookHits=null;openBook();
   try{
     if(HOST){try{await lookupHost(q,ctl.signal)}catch(e){if(e.code==='server_not_connected'||e.code==='not_in_manifest'||e.code==='capability_disabled'||e.code==='not_granted'){HOST=false;BK.mode='topic';if(SAMPLE)await lookupTopic(q,ctl.signal);else lookupLocal(q)}else throw e}}
     else if(SAMPLE)await lookupTopic(q,ctl.signal);else lookupLocal(q);
@@ -878,7 +897,7 @@ function sail(i){if(!W3.ok)return;focusIsland(i);S.sel=-1;
 function openBook(){S.sel=-1;labEls.forEach(l=>l.classList.remove('sel'));renderBook();if(innerWidth<=760)$('index').classList.add('min')}
 function renderBook(){
   const el=$('detail');el.hidden=false;el.dataset.mode='book';const t=nowT();
-  const head=`<button class="x" type="button" id="dx" aria-label="關閉">×</button><div class="dh"><div class="eyebrow">Book Voyage · ${BK.mode==='host'?'即時館藏':'主題航線'}</div><h3>${esc(BK.title?BK.title.split(' / ')[0]:'「'+BK.q+'」')}</h3>
+  const head=`<button class="x" type="button" id="dx" aria-label="關閉">×</button><div class="dh"><div class="eyebrow">Book Voyage · ${BK.mode==='host'?'即時館藏':BK.local?'館藏查詢':'主題航線'}</div><h3>${esc(BK.title?BK.title.split(' / ')[0]:'「'+BK.q+'」')}</h3>
     ${BK.title?`<div class="tag">${esc((BK.editions[BK.pick]||{}).au||'')}${(BK.editions[BK.pick]||{}).pub?' · '+esc(BK.editions[BK.pick].pub):''}</div>`:''}
     <div class="steps">${BK.steps.map((s,k)=>`<span class="${k===BK.steps.length-1&&BK.busy?'now':''}">${esc(s)}</span>`).join('')}${BK.busy?'<button type="button" class="linkbtn" id="bkStop">停止</button>':''}</div></div>`;
   let body='';
@@ -892,11 +911,18 @@ function renderBook(){
       ${isl?`<div class="lk"><button type="button" class="linkbtn" data-go="${o.i}" data-b="${o.bi}" style="padding:0">⛵ 航向這座島</button></div>`:''}</div>`}).join('');
     body+=`<p class="foot" style="margin:0">館藏讀自北市圖館藏查詢系統（${esc(BK.at)}）。<a href="${BK.detail}" target="_blank" rel="noopener">到館藏系統預約 ↗</a></p>`;
   }
-  if(BK.mode==='topic'&&BK.topic){body+=`<div class="nt">這個畫面不能連到館藏系統，以下是依主題推薦的島，不代表一定有這本書。要確認哪一館有書，請用下方連結。</div>${BK.topic.subject?`<p class="th" style="margin:0">${esc(BK.topic.subject)}</p>`:''}`;
+  if(BK.mode==='topic'&&BK.local&&BK.q){
+    body+=`<a class="btn bkgo" href="${searchURL(BK.q)}" target="_blank" rel="noopener">到北市圖查「${esc(BK.q)}」 ↗</a>
+    <p class="th" style="margin:0">在北市圖館藏查詢可以看到哪幾館有這本書、現在在不在架上，也可以直接預約。</p>
+    <p class="foot" style="margin:0">也可以查：<a href="${booksURL(BK.q)}" target="_blank" rel="noopener">博客來 ↗</a>　<a href="${gbooksURL(BK.q)}" target="_blank" rel="noopener">Google 圖書 ↗</a></p>`;
+    if(BK.topic&&BK.topic.picks.length){body+=`<div class="sect">館藏特色相關的島</div><p class="th" style="margin:0">依書名裡的主題關鍵字推薦，不代表這幾館一定有這本書。</p>`;
+      body+=BK.topic.picks.map(o=>{const b=ISLANDS[o.i].b[o.bi];const st=status(b,t);return`<div class="bitem"><div class="top"><b>${esc(o.n)}</b><span class="st ${st.s}">${esc(st.label)}</span></div><div class="th">${esc(islName(ISLANDS[o.i]))} · ${esc(o.why)}</div><div class="lk"><button type="button" class="linkbtn" data-go="${o.i}" data-b="${o.bi}" style="padding:0">⛵ 航向這座島</button></div></div>`}).join('')}
+  }
+  if(BK.mode==='topic'&&!BK.local&&BK.topic){body+=`<div class="nt">這個畫面不能連到館藏系統，以下是依主題推薦的島，不代表一定有這本書。要確認哪一館有書，請用下方連結。</div>${BK.topic.subject?`<p class="th" style="margin:0">${esc(BK.topic.subject)}</p>`:''}`;
     body+=BK.topic.picks.map(o=>{const b=ISLANDS[o.i].b[o.bi];const st=status(b,t);return`<div class="bitem"><div class="top"><b>${esc(o.n)}</b><span class="st ${st.s}">${esc(st.label)}</span></div><div class="th">${esc(islName(ISLANDS[o.i]))} · ${esc(o.why)}</div><div class="lk"><button type="button" class="linkbtn" data-go="${o.i}" data-b="${o.bi}" style="padding:0">⛵ 航向這座島</button></div></div>`}).join('')||'<p class="th">沒有找到館藏特色相近的島。</p>';
   }
   if(BK.err)body+=`<div class="nt">${esc(BK.err)}</div>${BK.busy?'':'<button type="button" class="btn ghost" id="bkRetry" style="align-self:flex-start">重新查詢</button>'}`;
-  if(BK.q)body+=`<p class="foot" style="margin:0"><a href="${searchURL(BK.q)}" target="_blank" rel="noopener">在北市圖館藏系統搜尋「${esc(BK.q)}」 ↗</a></p>`;
+  if(BK.q&&!BK.local)body+=`<p class="foot" style="margin:0"><a href="${searchURL(BK.q)}" target="_blank" rel="noopener">在北市圖館藏系統搜尋「${esc(BK.q)}」 ↗</a></p>`;
   el.innerHTML=head+`<div class="db">${body}</div>`;
   $('dx').onclick=()=>{if(BK.ctl)BK.ctl.abort();S.bookHits=null;el.dataset.mode='';closeDetail();tick()};
   const st=$('bkStop');if(st)st.onclick=()=>BK.ctl&&BK.ctl.abort();
