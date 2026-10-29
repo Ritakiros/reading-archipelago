@@ -1,0 +1,931 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<title>閱讀群島 READING ARCHIPELAGO</title>
+<meta name="description" content="把臺北市立圖書館 69 個服務據點畫成 14 座 3D 島嶼：看開館時間、館藏特色與設施，輸入書名找有館藏的島。非官方網站。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="閱讀群島 READING ARCHIPELAGO">
+<meta property="og:description" content="把臺北市立圖書館 69 個服務據點畫成 14 座 3D 島嶼：看開館時間、館藏特色與設施，輸入書名找有館藏的島。非官方網站。">
+<meta property="og:url" content="https://ritakiros.github.io/reading-archipelago/">
+<meta property="og:image" content="https://ritakiros.github.io/reading-archipelago/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="閱讀群島 READING ARCHIPELAGO">
+<meta name="twitter:description" content="把臺北市立圖書館 69 個服務據點畫成 14 座 3D 島嶼：看開館時間、館藏特色與設施，輸入書名找有館藏的島。非官方網站。">
+<meta name="twitter:image" content="https://ritakiros.github.io/reading-archipelago/og.png">
+<link rel="icon" href="data:,">
+<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: 全畫面 3D 群島。左上品牌牌、上方時間與工具列、右側索引（手機為底部抽屜）、左側島嶼面板、日誌浮卡 */
+:root{
+  --paper:#FFF8EE; --paper2:#F6EBDA; --ink:#23383D; --muted:#6B7B7C; --line:#E7D8C2;
+  --accent:#E0A526; --accent-ink:#2A1E05; --roof:#E4572E; --teal:#2E7F86;
+  --open:#3E9E5C; --soon:#E0A526; --closed:#A0A7A6; --na:#7C8FB0;
+  --f-display:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --shadow:0 6px 18px rgba(60,40,10,.14),0 1px 0 rgba(255,255,255,.6) inset;
+  --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px); --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+html,body{height:100%}
+*{box-sizing:border-box}
+body{margin:0;background:#BFE3E0;color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.6;overflow:hidden;
+  padding-left:max(0px,0px);padding-right:max(0px,0px)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+#app{position:fixed;inset:0}
+#stage{position:absolute;inset:0}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.mono{font-family:var(--f-mono);letter-spacing:.06em}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--teal);text-transform:uppercase;font-weight:600}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;line-height:1.25;text-wrap:balance}
+
+/* brand */
+.brand{position:absolute;top:calc(12px + var(--st));left:calc(12px + var(--sl));padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:5}
+.brand .logo{font-family:var(--f-display);font-size:28px;line-height:1;color:var(--roof);letter-spacing:.02em}
+.brand .logo small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;color:var(--teal);margin-top:4px}
+.brand .sub{font-size:12px;color:var(--muted);border-left:1px solid var(--line);padding-left:12px;line-height:1.4}
+.brand .sub b{display:block;color:var(--ink);font-weight:700;font-size:13px}
+
+/* toolbars */
+.tools{position:absolute;top:calc(12px + var(--st));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:5;max-width:calc(100% - 24px)}
+.seg{display:flex;gap:2px;padding:4px;border-radius:999px}
+.seg button{border:0;background:none;border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:#E4572E;margin-right:5px;vertical-align:1px;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.tb{display:flex;gap:2px;padding:4px;border-radius:14px;overflow-x:auto;max-width:100%}
+.tb button{border:0;background:none;border-radius:10px;padding:4px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11.5px;color:var(--muted);min-width:46px}
+.tb button svg{width:18px;height:18px}
+.tb button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.corner{position:absolute;top:calc(12px + var(--st));right:calc(356px + var(--sr));display:flex;gap:6px;z-index:5}
+.pill{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 12px;cursor:pointer;box-shadow:var(--shadow);font-size:13px;white-space:nowrap}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* live chip */
+.livechip{position:absolute;left:calc(12px + var(--sl));bottom:calc(12px + var(--sb));padding:8px 12px;display:flex;align-items:center;gap:10px;z-index:5;font-size:12.5px}
+.livechip .dot{width:8px;height:8px;border-radius:50%;background:var(--open);animation:pulse 2s infinite}
+.livechip b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* labels */
+#labels{position:absolute;inset:0;pointer-events:none;z-index:3}
+.lab{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 6px;font-size:12.5px;white-space:nowrap;box-shadow:0 3px 8px rgba(60,40,10,.18);display:flex;align-items:center;gap:6px}
+.lab .no{font-family:var(--f-mono);font-size:10.5px;background:var(--ink);color:var(--paper);border-radius:999px;padding:0 6px}
+.lab .od{width:7px;height:7px;border-radius:50%}
+.lab.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.lab.sel .no{background:var(--accent);color:var(--accent-ink)}
+.hideLabels .lab{display:none}
+
+/* index panel */
+.index{position:absolute;top:0;right:0;bottom:0;width:340px;background:var(--paper);border-left:1px solid var(--line);z-index:6;display:flex;flex-direction:column;
+  padding:calc(16px + var(--st)) calc(16px + var(--sr)) calc(12px + var(--sb)) 16px;gap:12px}
+.index .head{display:flex;flex-direction:column;gap:6px}
+.index h2{font-size:26px}
+.index .meta{font-size:12.5px;color:var(--muted)}
+.quizcard{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--paper2);border:1px solid var(--line);cursor:pointer;text-align:left;width:100%}
+.quizcard b{display:block;font-family:var(--f-display);font-weight:400;font-size:16px}
+.quizcard span{font-size:12px;color:var(--muted)}
+.quizcard i{margin-left:auto;font-style:normal;color:var(--roof);font-size:18px}
+.search{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;background:#fff;color:var(--ink)}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px;cursor:pointer;font-size:13px}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.list{overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;margin:0 -6px;padding:0 6px}
+.row{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;padding:9px 8px;border:0;border-bottom:1px solid var(--line);background:none;cursor:pointer;text-align:left;width:100%;border-radius:8px}
+.row:hover{background:var(--paper2)}
+.row.sel{background:var(--paper2);box-shadow:inset 3px 0 0 var(--roof)}
+.row .n{font-family:var(--f-display);font-size:22px;color:var(--roof);font-style:italic}
+.row .t{font-weight:500;min-width:0}
+.row .t small{display:block;color:var(--muted);font-size:12px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .c{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.row .c b{color:var(--open)}
+.foot{font-size:11.5px;color:var(--muted);line-height:1.5}
+.foot a{color:var(--teal)}
+
+/* detail panel */
+.detail{position:absolute;top:calc(84px + var(--st));left:calc(12px + var(--sl));bottom:calc(64px + var(--sb));width:330px;z-index:7;display:flex;flex-direction:column;overflow:hidden}
+.detail .dh{padding:14px 16px 10px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line)}
+.detail .x{position:absolute;top:8px;right:8px;border:0;background:none;font-size:20px;cursor:pointer;width:32px;height:32px;border-radius:50%}
+.detail .x:hover{background:var(--paper2)}
+.detail h3{font-size:24px}
+.detail .tag{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:#fff;display:inline-flex;align-items:center;gap:5px}
+.chip .od{width:7px;height:7px;border-radius:50%}
+.db{overflow-y:auto;padding:8px 12px 14px;display:flex;flex-direction:column;gap:8px}
+.bitem{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.bitem .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.bitem b{font-weight:700}
+.st{font-size:11.5px;border-radius:999px;padding:1px 8px;white-space:nowrap;font-weight:500}
+.st.open{background:#E3F3E7;color:#226B3A}.st.soon{background:#FBEFCF;color:#7A5605}.st.closed{background:#ECEEEE;color:#555F5F}.st.na{background:#E6ECF6;color:#3C5379}
+.bitem .th{font-size:13px;color:var(--muted)}
+.bitem .hr{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.bitem .nt{font-size:12.5px;background:#FDF1E6;border-radius:8px;padding:4px 8px;color:#8A3D1C}
+.bitem .lk{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px}
+.bitem a,.detail a{color:var(--teal);text-underline-offset:3px}
+.sect{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);margin-top:6px}
+
+/* log */
+.log{position:absolute;left:calc(12px + var(--sl));bottom:calc(60px + var(--sb));width:340px;max-height:60%;z-index:8;display:flex;flex-direction:column;overflow:hidden}
+.log .lh{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.log .lb{overflow-y:auto;padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.stat b{display:block;font-family:var(--f-display);font-size:24px;font-weight:400;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:var(--muted)}
+.ev{display:grid;grid-template-columns:58px 1fr;gap:8px;font-size:13px}
+.ev .d{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.hourbar{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;height:40px;align-items:end}
+.hourbar i{background:var(--teal);border-radius:2px 2px 0 0;opacity:.75}
+.hourbar i.now{background:var(--roof);opacity:1}
+.hb-x{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+
+/* modal */
+.scrim{position:absolute;inset:0;background:rgba(35,56,61,.35);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{max-width:420px;width:100%;padding:20px;display:flex;flex-direction:column;gap:12px}
+.modal h3{font-size:24px}
+.modal p{margin:0;color:var(--muted)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.btn{border:0;border-radius:999px;padding:8px 18px;cursor:pointer;background:var(--ink);color:var(--paper);font-weight:500}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.opts{display:grid;gap:8px}
+.opts button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer}
+.opts button:hover{border-color:var(--roof)}
+.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--roof)}
+
+.st.self{background:#DDF0F1;color:#1E5F64}
+.lab .fc:empty{display:none}.lab .fc{font-family:var(--f-mono);font-size:10.5px;background:#F5B921;color:#2A1E05;border-radius:999px;padding:0 6px}
+.lab.dim{opacity:.45}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 2px}
+.fchip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer}
+.fchip[aria-pressed="true"]{background:#F5B921;border-color:#E0A526;color:#2A1E05}
+.linkbtn{border:0;background:none;color:var(--teal);text-decoration:underline;cursor:pointer;font-size:12px;padding:0 4px}
+.svcs{display:grid;gap:8px;padding:0 2px 8px}
+.svc{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-decoration:none;color:var(--ink)}
+.svc:hover{border-color:var(--teal)}
+.svc .sk{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;color:var(--roof)}
+.svc b{font-weight:500}.svc span:last-child{font-size:12.5px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:2px 0;font-size:12.5px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;min-width:0;user-select:text}
+.amen{display:flex;flex-wrap:wrap;gap:4px}
+.amen span{font-size:11px;background:var(--paper2);border-radius:6px;padding:1px 6px;color:var(--muted)}
+.amen span.on{background:#F5B921;color:#2A1E05}
+.sites{margin:2px 0;padding-left:1.2em;font-size:12.5px;color:var(--muted)}
+.evs{display:flex;flex-direction:column;gap:3px}
+.evs a{font-size:12.5px;text-decoration:none;color:var(--ink)}
+.evs a:hover{text-decoration:underline}
+.evs .et{font-family:var(--f-mono);font-size:10.5px;background:#FDE3D9;color:#8A2E14;border-radius:5px;padding:0 5px;margin-right:6px}
+.ev a{color:var(--ink);text-decoration:none}.ev a:hover{text-decoration:underline}
+.bookform{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#FFF1D6,#FFF8EE);border:1px solid #F0D49A}
+.bookform label{font-family:var(--f-display);font-size:17px}
+.bfrow{display:flex;gap:6px}.bfrow input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;background:#fff;color:var(--ink)}
+.bfrow .btn{white-space:nowrap;padding:8px 14px}
+.bookform .hint{font-size:11.5px;color:var(--muted)}
+.steps{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
+.steps span::before{content:"✓ ";color:var(--open)}
+.steps span.now::before{content:"⏳ "}
+.steps span.now{color:var(--ink)}
+@media (max-width:760px){.quizcard{display:none}}
+/* fallback */
+.nogl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--ink)}
+
+/* mobile: index becomes bottom sheet */
+@media (max-width:760px){
+  .brand{padding:8px 10px}.brand .logo{font-size:22px}.brand .sub{display:none}
+  .tools{top:calc(64px + var(--st));left:12px;right:12px;transform:none;max-width:none;align-items:stretch}
+  .seg{overflow-x:auto}
+  .corner{right:calc(12px + var(--sr))}
+  .corner .pill.opt{display:none}
+  .index{top:auto;left:0;width:auto;height:44%;border-left:0;border-top:1px solid var(--line);border-radius:18px 18px 0 0;
+    padding-left:max(16px,var(--sl));padding-right:max(16px,var(--sr));box-shadow:0 -8px 24px rgba(60,40,10,.16);transition:height .25s}
+  .index.min{height:calc(118px + var(--sb))}
+  .index .grab{display:block}
+  .index h2{font-size:20px}
+  .detail{top:auto;left:0;right:0;bottom:0;width:auto;height:58%;border-radius:18px 18px 0 0;padding-bottom:var(--sb)}
+  .livechip{bottom:auto;top:calc(12px + var(--st));left:auto;right:calc(12px + var(--sr));display:none}
+  .log{left:12px;right:12px;width:auto;bottom:auto;top:calc(150px + var(--st));max-height:50%}
+}
+.grab{display:none;width:40px;height:5px;border-radius:3px;background:var(--line);margin:-6px auto 2px;border:0;padding:0;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.seg .live,.livechip .dot{animation:none}.index{transition:none}}
+</style>
+
+<div id="app">
+  <div id="stage" aria-label="閱讀群島 3D 地圖：14 座六角島，可拖曳旋轉與縮放"></div>
+  <div id="labels"></div>
+
+  <div class="brand card">
+    <div class="logo">閱讀群島<small>READING ARCHIPELAGO</small></div>
+    <div class="sub"><b>北市圖服務據點地圖</b>14 座島 · 69 個據點</div>
+  </div>
+
+  <div class="tools">
+    <div class="seg card" id="timeSeg" role="group" aria-label="時間"></div>
+    <div class="tb card" id="toolBar" role="group" aria-label="地圖工具"></div>
+  </div>
+
+  <div class="corner">
+    <button class="pill" id="bHome" type="button">⌂ 全景</button>
+    <button class="pill opt" id="bQuiz" type="button">☺ 讀者</button>
+    <button class="pill" id="bList" type="button" aria-pressed="true">☰ 清單</button>
+    <button class="pill" id="bHelp" type="button" aria-label="導覽">?</button>
+  </div>
+
+  <div class="livechip card" id="liveChip"><span class="dot"></span><span id="liveText">載入中</span></div>
+
+  <aside class="index" id="index">
+    <button class="grab" id="grab" type="button" aria-label="展開或收合清單"></button>
+    <div class="head">
+      <div class="eyebrow">The Reading Index</div>
+      <h2>把閱讀，連起來。</h2>
+      <div class="meta" id="indexMeta"></div>
+    </div>
+    <form class="bookform" id="bookForm" autocomplete="off"><label for="bookQ">輸入你喜歡的書，航向有館藏的島</label>
+      <div class="bfrow"><input id="bookQ" type="search" placeholder="書名或 ISBN，例如：原子習慣" enterkeyhint="go"><button class="btn" type="submit">⛵ 啟航</button></div><span class="hint" id="bookHint">會到北市圖館藏系統查詢各館冊數。</span></form>
+    <button class="quizcard" id="quizCard" type="button"><div><b>你是哪一種讀者？</b><span>四個問題，找到最適合你的那座島和分館。</span></div><i>›</i></button>
+    <input class="search" id="q" type="search" placeholder="搜尋分館、特色、地址：漫畫、天文、萬華…" aria-label="搜尋分館或主題">
+    <div class="tabs"><button type="button" id="tab-isl" aria-pressed="true">島嶼</button><button type="button" id="tab-open" aria-pressed="false">現在開放</button><button type="button" id="tab-svc" aria-pressed="false">服務</button></div>
+    <div class="list" id="list"></div>
+    <div class="foot">據點、館藏特色、設施、開館時間、異動與活動擷取自<a href="https://tpml.gov.taipei/cp.aspx?n=1F9AED300D314011" target="_blank" rel="noopener">北市圖官網</a>（2026-10-29）。非官方網站，出門前請再確認官網公告。</div>
+  </aside>
+
+  <section class="detail card" id="detail" hidden aria-live="polite"></section>
+  <section class="log card" id="log" hidden></section>
+  <div class="scrim" id="scrim" hidden><div class="modal card" id="modal"></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* ================= DATA（北市圖官網「服務據點一覽」，擷取 2026-10-29） ================= */
+const B=(n,f,a,t,s,x)=>Object.assign({n,f,a,t,s},x||{});
+const ISLANDS=[
+ {k:'總館',area:'大安區',q:0,r:0,g:0x9CCB7A,tag:'群島的中央港口：綜合館藏、自修座位預約，借書船從這裡出發',b:[
+  B('總館','綜合性館藏','臺北市大安區建國南路二段125號','27552823','自箱哺梯證筆取E原新菌',{seat:1})]},
+ {k:'中正區',q:-1,r:0,g:0xA9C97C,tag:'旅遊與家政的老城門',b:[
+  B('王貫英先生紀念圖書館','旅遊','臺北市中正區汀州路二段265號','23678734','自箱哺梯證筆取新青菌'),
+  B('城中分館','家政','臺北市中正區濟南路二段46號3樓','23938274','自箱哺梯筆取原新菌'),
+  B('南機場借還書工作站','','臺北市中正區中華路二段315巷16號1樓','23036281','箱')]},
+ {k:'大安區',q:0,r:1,g:0x8FC48A,tag:'中國文學與禮俗，閱覽室最密的書街',b:[
+  B('道藩分館','中國文學','臺北市大安區辛亥路三段11號3樓','27334031','箱哺梯筆取新菌'),
+  B('大安分館','禮俗','臺北市大安區辛亥路三段223號4、5樓','27325422','自箱哺梯筆取原新菌',{closed:1}),
+  B('延吉民眾閱覽室','','臺北市大安區延吉街236巷17號3、4樓','27081964','自箱梯筆取新菌'),
+  B('成功民眾閱覽室','','臺北市大安區和平東路二段311巷29號4樓','27013604','箱梯筆取新菌',{night:1}),
+  B('龍安民眾閱覽室','','臺北市大安區永康街60號2-3樓','23945485','自箱哺梯取新菌')]},
+ {k:'中山區',q:0,r:-1,g:0xB5CF7E,tag:'企業管理、勞工議題與大眾傳播',b:[
+  B('中山分館','企業管理','臺北市中山區松江路367號8樓','25026442','自箱哺梯證筆取新菌'),
+  B('長安分館','勞工問題','臺北市中山區長安西路3號4樓','25625540','自箱哺梯筆取新菌'),
+  B('大直分館','大眾傳播','臺北市中山區大直街25號3-5樓','25336535','自箱哺梯證筆取原新青菌'),
+  B('恆安民眾閱覽室','','臺北市中山區民權東路一段71巷19號','25935482','自箱哺梯筆取新菌')]},
+ {k:'松山區',q:1,r:-1,g:0x9FCF95,tag:'親職、美術、漫畫與視障服務的碼頭',b:[
+  B('民生分館','親職教育','臺北市松山區敦化北路199巷5號4、5樓','27138083','自箱哺梯證筆取新菌'),
+  B('三民分館','美術','臺北市松山區民生東路五段163-1號5、6樓','27600408','自箱哺梯取E原新菌'),
+  B('中崙分館','漫畫','臺北市松山區長安東路二段229號7-10樓','87736858','箱哺梯取新菌'),
+  B('啟明分館','視障資料','臺北市松山區敦化北路155巷76號','25148443','箱哺梯新菌')]},
+ {k:'信義區',q:2,r:-1,g:0xC2D27F,tag:'傳記、行銷、飲食與城市發展',b:[
+  B('永春分館','傳記','臺北市信義區松山路294號3-4樓','27609730','自箱哺梯證筆取新菌'),
+  B('三興分館','商品行銷','臺北市信義區吳興街156巷6號4、5樓','87321063','箱哺梯取新菌',{night:1}),
+  B('六合分館','飲食文化','臺北市信義區松仁路240巷19號3-5樓','27292485','自箱哺梯筆取原新菌'),
+  B('廣慈分館','城市發展','臺北市信義區福德街86號3-4樓','27277872','自箱哺梯筆取新菌',{seat:1}),
+  B('松山分館替代服務處','','臺北市信義區松隆路327號B1','27531875','梯')]},
+ {k:'士林區',q:0,r:-2,g:0x7DB870,tag:'生活保健、歐洲文化、天文與園藝',b:[
+  B('葫蘆堵分館','生活保健','臺北市士林區延平北路五段136巷1號3-9樓','28126513','自箱哺梯證筆取原菌'),
+  B('天母分館','歐洲文化','臺北市士林區中山北路七段154巷6號3、4樓','28736203','自箱哺梯取E新青菌'),
+  B('士林分館','天文','臺北市士林區華聲街17號3、4樓','28361994','自箱哺梯取新青菌討',{seat:1}),
+  B('李科永紀念圖書館','園藝','臺北市士林區中正路15號','28833453','自箱哺梯證筆取新菌')]},
+ {k:'北投區',q:-1,r:-2,g:0x86B66C,tag:'生態、表演藝術、體育與動物，據點最多的山腳',b:[
+  B('北投分館','生態保育','臺北市北投區光明路251號','28977682','箱哺梯證取原新菌'),
+  B('稻香分館','園藝','臺北市北投區稻香路81號7-9樓','28940662','自箱哺梯筆取新菌',{seat:1}),
+  B('石牌分館','表演藝術','臺北市北投區明德路208巷5號3-10樓','28239634','自箱哺梯取新菌'),
+  B('清江分館','體育','臺北市北投區公館路198號3樓','28960315','自箱哺梯筆取新菌',{night:1}),
+  B('吉利分館','動物','臺北市北投區立農街一段366號5-8樓','28201633','自箱哺梯筆取新菌'),
+  B('永明民眾閱覽室','','臺北市北投區石牌路二段115號7-8樓','28234141','自箱哺梯取新菌',{night:1}),
+  B('秀山民眾閱覽室','','臺北市北投區中和街534號5-9樓','28921475','自箱哺梯筆取新菌',{night:1}),
+  B('陽明借還書工作站','','臺北市北投區立農街二段155號1樓','28221781','箱哺'),
+  B('關渡宮借還書工作站','','臺北市北投區知行路360號','28581281 分機166','自')]},
+ {k:'內湖區',q:2,r:-3,g:0x92C78B,tag:'社會福利、建築美學、音樂與客家文化的湖畔',b:[
+  B('內湖分館','社會福利','臺北市內湖區民權東路六段99號6樓','27918772','自箱哺梯筆取新菌'),
+  B('東湖分館','建築美學','臺北市內湖區五分街6號','26323378','自箱哺梯筆取原新菌'),
+  B('西湖分館','音樂','臺北市內湖區內湖路一段594號','27973183','自箱哺梯取新菌',{seat:1}),
+  B('西中分館','客家文化','臺北市內湖區內湖路一段285巷66號1-2樓','87515497','自箱哺梯筆取新青菌')]},
+ {k:'南港區',q:3,r:-2,g:0xA6CB86,tag:'原住民族文化、科普與親子美育的東港',b:[
+  B('南港分館','原住民族文化','臺北市南港區南港路一段350號','27825232','自箱哺梯證筆取原新青菌'),
+  B('舊莊分館','科普','臺北市南港區舊莊街一段91巷11號2-5樓','27837212','自箱哺梯筆取原新菌'),
+  B('親子美育數位圖書館','','臺北市南港區研究院路二段61巷15號','26518163','箱梯菌'),
+  B('龍華民眾閱覽室','','臺北市南港區東新街63巷8號','27851740','自箱哺梯證筆取新菌'),
+  B('北原會館借還書工作站','','臺北市南港區向陽路49號4樓','27828740','箱哺梯')]},
+ {k:'文山區',q:0,r:2,g:0x88BE72,tag:'法律、茶藝、臺灣文學與教育的南方高地',b:[
+  B('景美分館','學校教育','臺北市文山區羅斯福路五段176巷50號2-4樓','29328457','自箱哺梯取新菌'),
+  B('木柵分館','法律','臺北市文山區保儀路13巷3號3、4樓','29397520','自箱哺梯筆取新菌',{night:1}),
+  B('永建分館','考試銓敘','臺北市文山區木柵路一段177號3-4樓','','自箱哺梯取菌',{closed:1}),
+  B('萬興分館','大陸資料','臺北市文山區萬壽路27號4-5樓','22345501','自箱哺梯筆取新青菌'),
+  B('文山分館','茶藝','臺北市文山區興隆路二段160號7-9樓','29315339','自箱哺梯證筆取E新菌',{seat:1}),
+  B('力行分館','臺灣文學','臺北市文山區一壽街22號5-8樓','86612196','自箱哺梯筆取新菌'),
+  B('景新分館','臺北市教育','臺北市文山區景後街151號5-10樓','29331244','自箱哺梯證筆取原新青菌'),
+  B('安康民眾閱覽室','','臺北市文山區興隆路四段105巷1號4樓','29390180','自箱梯取新菌'),
+  B('萬芳民眾閱覽室','','臺北市文山區萬美街一段25號1-2樓','22305287','箱哺筆取新菌',{night:1})]},
+ {k:'大同區',q:-2,r:0,g:0xB9CB86,tag:'鄉土文化、聽障資料與臺灣史的老街',b:[
+  B('延平分館','鄉土文化','臺北市大同區保安街47號','25528534','自箱哺梯取原新菌'),
+  B('大同分館','聽障資料','臺北市大同區重慶北路三段318號','25943236','自箱哺梯證筆取新菌'),
+  B('建成分館','臺灣史','臺北市大同區民生西路198-20號4樓','25582320','自箱哺筆取新菌',{night:1}),
+  B('蘭州民眾閱覽室','','臺北市大同區昌吉街57號4樓之6','25981387','自箱哺梯筆取新菌',{night:1})]},
+ {k:'萬華區',q:-2,r:1,g:0xAEC68A,tag:'臺北史蹟、中國醫藥與兒童圖書館的西岸',b:[
+  B('龍山分館','','臺北市萬華區桂林路65巷6號','23311497','自箱哺取新菌'),
+  B('東園分館','天文氣象','臺北市萬華區東園街199號','23070460','自箱哺梯證筆取新菌',{closed:1}),
+  B('西園分館','中國醫藥','臺北市萬華區興寧街6號3-6樓','23069046','自箱哺梯取新菌'),
+  B('萬華分館','臺北史蹟','臺北市萬華區東園街19號5-7樓','23391056','箱哺梯證取E新菌'),
+  B('柳鄉兒童圖書館','','臺北市萬華區環河南路二段102號4樓','23080586','箱哺梯原菌取新')]},
+ {k:'智慧與自動借書',area:'獨立航標',q:2,r:1,g:0x9FC3C9,tag:'6 座智慧圖書館與 9 個 FastBook 站，捷運站就能借還',b:[
+  B('東區地下街智慧圖書館','','臺北市大安區大安路一段77號東區地下街3號店鋪（近出口15）','27552823 分機2104',''),
+  B('松山機場智慧圖書館','','臺北市松山區敦化北路338號B1（捷運松山機場站3號入口）','27138083',''),
+  B('太陽圖書館','','臺北市萬華區青年路65號（青年公園內）','23678734',''),
+  B('百齡智慧圖書館','','臺北市士林區福港街205號（百齡國小）','28126513',''),
+  B('古亭智慧圖書館','','臺北市中正區寧波西街286號（古亭國中旁）','23391056',''),
+  B('社子島智慧圖書館','','臺北市士林區延平北路九段80號2樓','28126513',''),
+  B('FastBook 全自動借書站','','9 個站點，見下方清單','27552823 分機2104','')]}
+];
+const FASTBOOK=['總館 1 樓門口','捷運信義安和站 1 號出口','臺北車站地下 1 樓剪票口旁','捷運小南門站 3、4 號出口 B1 夾層','捷運台北小巨蛋站 1 號出口','松山車站地下 1 樓','臺北市政府中央北區','南港車站地下 2 樓','捷運行天宮站 2 號出口'];
+const AM={'自':'自修室','箱':'還書箱','哺':'哺乳室','梯':'無障礙電梯','證':'RFID 辦證','筆':'筆電區','取':'預約書自助取書','E':'學習E樂園','原':'原住民族資料專區','新':'新住民閱讀專區','青':'青少年閱覽區','菌':'除菌箱','討':'討論小間'};
+const FILTERS=[['自','自修室'],['seat','座位線上預約'],['筆','筆電區'],['青','青少年閱覽區'],['哺','哺乳室'],['梯','無障礙電梯'],['E','學習E樂園'],['night','夜間自助'],['證','RFID 辦證']];
+const matchF=(b,f)=>f==='seat'?!!b.seat:f==='night'?!!b.night:b.s.includes(f);
+/* 官網開館規則與異動 */
+const HOLI={'2026-01-01':'開國紀念日','2026-02-05':'圖書整理日','2026-02-15':'春節','2026-02-16':'春節','2026-02-17':'春節','2026-02-18':'春節','2026-02-19':'春節','2026-02-20':'春節','2026-02-28':'和平紀念日','2026-03-05':'圖書整理日','2026-04-02':'圖書整理日','2026-04-04':'兒童節','2026-04-05':'清明節','2026-05-01':'勞動節','2026-05-07':'圖書整理日','2026-06-04':'圖書整理日','2026-06-19':'端午節','2026-07-02':'圖書整理日','2026-08-06':'圖書整理日','2026-09-03':'圖書整理日','2026-09-25':'中秋節','2026-09-28':'教師節','2026-10-01':'圖書整理日','2026-10-10':'國慶日','2026-10-25':'光復紀念日','2026-11-05':'圖書整理日','2026-11-28':'地方選舉日','2026-12-03':'圖書整理日','2026-12-25':'行憲紀念日'};
+const CLOSURE={'木柵分館':['2026-10-30','2026-12-29','館舍地坪整修暨屋頂防水工程'],'李科永紀念圖書館':['2026-10-30','2027-02-18','空調設備裝設暨監控工程'],'秀山民眾閱覽室':['2026-09-01','2026-12-20','館舍暨廁所整修工程'],'百齡智慧圖書館':['2026-08-01','2026-10-28','百齡國小大樓耐震補強工程'],'內湖分館':['2026-11-26','2026-11-29','辦理選務作業']};
+const NOTE={'松山分館替代服務處':'松山分館整修期間由此提供服務；每月最後一個週一另休館，未設還書箱。','啟明分館':'音樂廳屋頂更換暨空間改造工程至 10/30。','萬興分館':'外牆防水改善工程延至 10/30 竣工。','內湖分館':'11/26–29 配合選舉與公投選務閉館。','東湖分館':'至 11/6 封閉 3、4 樓（創客與科技、樂齡學習空間工程），服務內容配合調整。','陽明借還書工作站':'115 年 7–12 月服務時間調整，請見官網公告。','龍安民眾閱覽室':'採閉架式，書由館員代取。','士林分館':'設有 24 小時預約書自助取書櫃與討論小間。','大安分館':'官網標示目前已閉館。','東園分館':'官網標示目前已閉館。','永建分館':'官網標示目前已閉館。'};
+const NEWS=[
+ ['10/28','內湖分館 11/26–29 配合選務閉館'],
+ ['10/29','百齡智慧圖書館耐震補強工程結束，恢復開放'],
+ ['10/30','木柵分館起全面閉館，至 12/29'],
+ ['10/30','李科永紀念圖書館起全面閉館，至 116/2/18'],
+ ['10/30','啟明分館音樂廳工程、萬興分館外牆工程預計完工'],
+ ['11/05','每月第一個星期四，圖書整理清潔日，各館休館'],
+ ['11/06','東湖分館 3、4 樓工程結束'],
+ ['11/28','地方公職人員選舉日，休館'],
+ ['12/20','秀山民眾閱覽室整修閉館結束']
+];
+const SVCNEWS=[['10/22','總館「臺北時代印記」老照片徵選活動公布獲獎名單','E4B0F4D491387475'],['10/12','「好書大家讀」第 91 梯次優良少年兒童讀物開始徵件','4DD08CA0BE552683'],['09/14','借閱證可以結合台北通','F6FD62B46514BEC5'],['04/07','防範詐騙訊息宣導','C3CA95F736B1BBBB']];
+const SVCNEWS_URL='https://tpml.gov.taipei/News_Content.aspx?n=312ED56D937139DC&sms=78D644F2755ACCAA&s=';
+const EV_URL='https://tpml.gov.taipei/News_Content.aspx?n=3951678DEC0A8461&sms=9D72E82EC16F3E64&s=';
+const EVENTS=[
+ ['10/29','總館','兒童','小小世界：日文繪本故事時間','7117EA16AAFD71B2'],
+ ['10/28','東湖分館','講座','跟著 AI 去散步，智慧走讀趣','637A8F055DA99683'],
+ ['10/28','永春分館','講座','《答案不在辦公室》職業探索講座','60DF8B91DE904BFB'],
+ ['10/28','南港分館','講座','從「慢老」到「慢老 2.0」健康講座','6790320CD9D1899E'],
+ ['10/28','西湖分館','書展','「借一本打動你的心」可外借主題書展','C9CDDB37A73481BA'],
+ ['10/28','景美分館','電影','11 月 Fun 輕鬆電影院','823318D8A42452AD'],
+ ['10/28','大直分館','電影','11 月假日電影院','8F2FA607B96DFFC8'],
+ ['10/28','親子美育數位圖書館','電影','星期六電影同樂會','31E77630861809A8'],
+ ['10/28','王貫英先生紀念圖書館','電影','11 月週日電影院','CE2A365C9ECC7842'],
+ ['10/28','吉利分館','電影','11 月唭哩岸電影院','1B69E39BA75297D7'],
+ ['10/28','三民分館','電影','週日影展 Sunday Movies','B92AA20A9F490F19'],
+ ['10/27','士林分館','主題','「閱讀無垠：地球」SDGs 與泰國文化系列','016AB4A790157571'],
+ ['10/26','天母分館','書展','「新住民之悅讀西歐」書展','210C55E449F6F533'],
+ ['10/26','柳鄉兒童圖書館','主題','「跟著青山王去旅行」閱讀推廣','ED584063A21578ED'],
+ ['10/26','清江分館','電影','11–12 月清江電影臺','3EC7A50BEEA225A5'],
+ ['10/26','建成分館','電影','11 月雙連電影院','EFE47E71B446382B'],
+ ['10/24','王貫英先生紀念圖書館','兒童','11 月週六童樂會兒童影片','3DD744AF77E00471'],
+ ['10/22','李科永紀念圖書館','書展','「漫讀・閱心境」主題書展','328CBD16BEB01854'],
+ ['10/21','西湖分館','講座','12/19 愛樂賞析：琴的千年知遇','6ADB5CB4EF6D2FA6'],
+ ['10/21','舊莊分館','書展','「療癒手作坊」主題書展','72F0348670AABA3C'],
+ ['10/20','西湖分館','電影','安可電影院','AF2D7CCA0518F8E9'],
+ ['10/19','永春分館','電影','11 月假日電影院','E45D5AE56AE431D3'],
+ ['10/19','東湖分館','兒童','萬聖節童樂會：小怪獸出任務','01EADB66F582C4FC'],
+ ['10/19','西湖分館','講座','12/6 愛樂賞析：歌唱致勝技巧','F492BEBC527519C8'],
+ ['10/16','景新分館','講座','AI 時代的訊息與影像查證工作坊','3678A11A4A084D1E'],
+ ['10/16','景新分館','書展','「萬物皆有數」館藏特色書展','F7352C7079F7A1BA'],
+ ['10/16','萬華分館','書展','「愛閱生活節」系列書展','367DCB3B63317FDA'],
+ ['10/16','北投分館','書展','「今天，你的心情是什麼？」情緒主題書展','5E760599097DAFBA']
+];
+const evFor=n=>EVENTS.filter(e=>e[1]===n);
+const SV='https://tpml.gov.taipei/News_Content.aspx?n=CD4793DE89132E89&sms=71AD87982060791E&s=';
+const SERVICES=[
+ ['借書','網路辦證','線上申請借閱證，也可以結合台北通。','https://book.tpml.edu.tw/register'],
+ ['借書','館藏查詢與預約','查書、預約，選一間方便的分館或 FastBook 站取書。','https://book.tpml.edu.tw/'],
+ ['借書','FastBook 預約取書','預約時選 FastBook 站為取書館，書到後次日起 3 日內取書；熱門書、視聽資料與期刊不適用。',SV+'138284E6EF90129A'],
+ ['借書','超商借書','申請會員並繳 200 元保證金後，書可以寄到超商取。',SV+'34C971377DF3D668'],
+ ['還書','超商還書','可外借的圖書與視聽資料，可從全家、萊爾富門市寄回。',SV+'3BF9D7CCFAF81A09'],
+ ['還書','延長取書期限','預約書到館後可線上延長 2 日，每月每證 7 次（熱門館藏除外）。',SV+'2C4947BDA21AB30E'],
+ ['空間','自修座位預約','總館、廣慈、文山、西湖、稻香、士林分館的自修室可線上預約。',SV+'9C9863C2224D9B5A'],
+ ['空間','夜間智慧圖書館','9 處館舍週二至週六 17:00–21:00 改為無館員自助借還，辦證改視訊。',SV+'9AA5E65D434F3362'],
+ ['通知','圖書到期 LINE 通知','加入市府 LINE 帳號並訂閱，收到期、逾期與預約到館通知。',SV+'E2BC44F31BF36407'],
+ ['通知','iRead APP','找書、手機借書、行動借閱證、續借與延長取書。',SV+'6D8D90C2590987E5'],
+ ['跨館','北北基一證通用','一張證借臺北、新北、基隆的圖書館；另有國臺圖、桃園、新竹縣一證通用。',SV+'918F741547305057'],
+ ['點數','閱讀存摺','借書、參加活動集點，可兌換獎勵或折抵逾期停權。',SV+'CCAC07E5DEE87FFF'],
+ ['數位','電子資源','電子書與資料庫，用借閱證 24 小時線上使用。','https://isearch.tpml.edu.tw/'],
+ ['證件','線上延長借閱證','本國籍讀者可線上延長 6 年，之後需臨櫃展延一次。',SV+'EF0E09E75DB06155']
+];
+const fmtTel=t=>t?String(t).replace(/^(\d{4})(\d{4})/,'02-$1-$2'):'未提供';
+const kindOf=n=>n==='總館'?'main':/FastBook/.test(n)?'fastbook':/智慧|太陽圖書館/.test(n)?'smart':/工作站/.test(n)?'station':/閱覽室|兒童圖書館|親子美育|替代服務處/.test(n)?'room':'branch';
+
+/* ================= TIME & STATUS ================= */
+const pad=n=>String(n).padStart(2,'0');
+function tp(d){const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',weekday:'short',hour12:false}).formatToParts(d).map(x=>[x.type,x.value]));
+  const dow={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6}[p.weekday];const h=+p.hour%24;return{ymd:`${p.year}-${p.month}-${p.day}`,y:+p.year,m:+p.month,d:+p.day,dow,min:h*60+ +p.minute}}
+function lastMonday(t){const dim=new Date(Date.UTC(t.y,t.m,0)).getUTCDate();return t.dow===1&&t.d+7>dim}
+const fm=m=>pad(Math.floor(m/60)%24)+':'+pad(m%60);
+const SMART={'東區地下街智慧圖書館':[360,1440,0],'松山機場智慧圖書館':[360,1440,0],'太陽圖書館':[510,1260,0],'古亭智慧圖書館':[540,1260,1],'社子島智慧圖書館':[540,1260,1]};
+function hoursFor(b,t){
+  const n=b.n,hol=HOLI[t.ymd],natHol=hol&&hol!=='圖書整理日';
+  if(b.closed)return{kind:'closed',text:'目前已閉館'};
+  const c=CLOSURE[n];if(c&&t.ymd>=c[0]&&t.ymd<=c[1])return{kind:'closed',text:'暫停開放至 '+c[1].slice(5).replace('-','/')};
+  if(/工作站/.test(n))return{kind:'na',text:'服務時間請查官網'};
+  if(/FastBook/.test(n))return{kind:'na',text:'依各站點而定'};
+  if(SMART[n]){const [o,cl,noHol]=SMART[n];if(noHol&&natHol)return{kind:'closed',text:'國定假日不開放'};return{kind:'range',o,c:cl}}
+  if(n==='百齡智慧圖書館'){if(natHol)return{kind:'closed',text:'國定假日不開放'};return{kind:'range',o:t.dow===0||t.dow===6?550:1070,c:1250}}
+  if(hol)return{kind:'closed',text:'休館日（'+hol+'）'};
+  if(n==='啟明分館'||n==='柳鄉兒童圖書館'||n==='親子美育數位圖書館')return{kind:'range',o:540,c:1020};
+  if(n==='松山分館替代服務處'){if(lastMonday(t))return{kind:'closed',text:'月底週一休館'};return{kind:'range',o:600,c:t.dow>=2&&t.dow<=6?1170:1020}}
+  const wk=t.dow>=2&&t.dow<=6;return{kind:'range',o:wk?510:540,c:wk?1260:1020,night:b.night&&wk};
+}
+function status(b,t){
+  const h=hoursFor(b,t);
+  if(h.kind==='na')return{s:'na',label:h.text,hours:''};
+  if(h.kind==='closed')return{s:'closed',label:h.text,hours:''};
+  const hrs=fm(h.o)+'–'+(h.c>=1440?'24:00':fm(h.c));
+  if(t.min<h.o)return{s:'closed',label:fm(h.o)+' 開館',hours:hrs};
+  if(t.min>=h.c)return{s:'closed',label:'今日已閉館',hours:hrs};
+  if(h.night&&t.min>=1020)return{s:'self',label:'夜間自助・21:00 閉館',hours:hrs+'（17:00 起無館員）'};
+  if(h.c-t.min<=60)return{s:'soon',label:'即將閉館 '+(h.c>=1440?'24:00':fm(h.c)),hours:hrs};
+  return{s:'open',label:'開放中',hours:hrs};
+}
+const isOpen=s=>s==='open'||s==='soon'||s==='self';
+const S={sim:null,labels:true,boats:true,routes:true,paused:false,bird:false,sel:-1,tab:'isl',query:'',filter:null};
+const SIMS=[['即時',null],['清晨',6*60],['白天',12*60],['黃昏',18*60],['夜晚',21*60]];
+function nowT(){const t=tp(new Date());if(S.sim!=null)t.min=S.sim;return t}
+function islandStats(i,t){let o=0,n=0;ISLANDS[i].b.forEach(b=>{const s=status(b,t);if(s.s!=='na'){n++;if(isOpen(s.s))o++}});return{o,n}}
+const SCOL={open:'#3E9E5C',soon:'#E0A526',self:'#2E7F86',closed:'#A0A7A6',na:'#7C8FB0'};
+
+/* ================= 3D ================= */
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const W3={ok:false};
+const HEXR=5.2,GAP=1.27;
+function axial(q,r){return[HEXR*1.5*q*GAP,HEXR*Math.sqrt(3)*(r+q/2)*GAP]}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const MAT={};const mat=(c,o)=>{const key=c+JSON.stringify(o||{});return MAT[key]||(MAT[key]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.75,metalness:0,flatShading:true},o||{})))};
+const ROOFS=[0xE4572E,0xF2A541,0x2E86AB,0x6BAA75,0xC75D9A,0xE07A5F,0x3D7DCA];
+function init3d(){
+  if(!window.THREE)return false;
+  const box=document.getElementById('stage');let ren;
+  try{ren=new THREE.WebGLRenderer({antialias:true});}catch(e){return false}
+  ren.setPixelRatio(Math.min(devicePixelRatio||1,2));ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;
+  ren.outputEncoding=THREE.sRGBEncoding;box.appendChild(ren.domElement);
+  const scene=new THREE.Scene();const cam=new THREE.PerspectiveCamera(38,1,.5,600);
+  const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;ctl.dampingFactor=.08;ctl.minDistance=14;ctl.maxDistance=120;ctl.maxPolarAngle=1.36;ctl.screenSpacePanning=false;
+  ctl.addEventListener('start',()=>{W3.fly=null});
+  const hemi=new THREE.HemisphereLight(0xffffff,0x8a7a5a,.6);scene.add(hemi);
+  const amb=new THREE.AmbientLight(0xffffff,.25);scene.add(amb);
+  const sun=new THREE.DirectionalLight(0xffffff,1);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);const sc=sun.shadow.camera;sc.left=-45;sc.right=45;sc.top=45;sc.bottom=-45;sc.far=200;sun.shadow.bias=-.0005;scene.add(sun);scene.add(sun.target);
+  // sea: toy-like flat water disc with gentle swell
+  const wg=new THREE.CircleGeometry(160,96);wg.rotateX(-Math.PI/2);
+  const water=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({color:0x6CC3C4,roughness:.35,metalness:.05}));water.receiveShadow=true;water.position.y=-.2;scene.add(water);
+  // ripple rings
+  const rings=new THREE.Group();scene.add(rings);
+  // world group
+  const world=new THREE.Group();scene.add(world);
+  Object.assign(W3,{ok:true,ren,scene,cam,ctl,hemi,amb,sun,water,world,rings,box,islands:[],lamps:[],windows:[],boats:[],walkers:[],routes:null,t:0,visible:true});
+  // center
+  let cx=0,cz=0;ISLANDS.forEach(I=>{const [x,z]=axial(I.q,I.r);cx+=x;cz+=z});cx/=ISLANDS.length;cz/=ISLANDS.length;W3.c=[cx,cz];
+  ISLANDS.forEach((I,i)=>buildIsland(I,i));
+  buildRoutes();buildBoats();
+  // stars
+  const sg=new THREE.BufferGeometry(),sp=[];const rr=rng(7);for(let i=0;i<600;i++){const a=rr()*6.283,b=rr()*1.3+.15,R=280;sp.push(R*Math.cos(a)*Math.cos(b),R*Math.sin(b),R*Math.sin(a)*Math.cos(b))}
+  sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));W3.stars=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:1.1,sizeAttenuation:false,transparent:true,opacity:0}));scene.add(W3.stars);
+  home(true);
+  const fit=()=>{const w=box.clientWidth,h=box.clientHeight;if(!w||!h)return;ren.setSize(w,h,false);ren.domElement.style.width='100%';ren.domElement.style.height='100%';cam.aspect=w/h;cam.updateProjectionMatrix()};
+  new ResizeObserver(fit).observe(box);fit();
+  document.addEventListener('visibilitychange',()=>{W3.visible=!document.hidden});
+  // picking
+  const ray=new THREE.Raycaster(),mv=new THREE.Vector2();let down=null;
+  ren.domElement.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY]});
+  ren.domElement.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;const r=ren.domElement.getBoundingClientRect();
+    mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mv,cam);
+    const hits=ray.intersectObjects(W3.islands.map(x=>x.g),true);if(hits.length){let o=hits[0].object;while(o&&o.userData.island==null)o=o.parent;if(o){const bi=hits[0].object.userData.branch;select(o.userData.island,bi)}}});
+  ren.domElement.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const r=ren.domElement.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mv,cam);
+    const h=ray.intersectObjects(W3.islands.map(x=>x.g),true);ren.domElement.style.cursor=h.length?'pointer':'grab';let o=h[0]&&h[0].object;while(o&&o.userData.island==null)o=o.parent;W3.hover=o?o.userData.island:-1});
+  loop();return true;
+}
+function hexGeo(r,h){const g=new THREE.CylinderGeometry(r,r,h,6,1);g.rotateY(Math.PI/6);return g}
+function buildIsland(I,i){
+  const [x0,z0]=axial(I.q,I.r);const x=x0-W3.c[0],z=z0-W3.c[1];const r=rng(1000+i*77);
+  const g=new THREE.Group();g.position.set(x,0,z);g.userData.island=i;W3.world.add(g);
+  const base=new THREE.Mesh(hexGeo(HEXR*.98,1.6),mat(0xC79A63));base.position.y=-.9;base.receiveShadow=true;g.add(base);
+  const sand=new THREE.Mesh(hexGeo(HEXR,.5),mat(0xF1DDB0));sand.position.y=.05;sand.receiveShadow=true;g.add(sand);
+  const grass=new THREE.Mesh(hexGeo(HEXR*.86,.36),mat(I.g));grass.position.y=.45;grass.receiveShadow=true;g.add(grass);
+  const TOP=.63;
+  const path=new THREE.Mesh(new THREE.BoxGeometry(HEXR*1.4,.04,.7),mat(0xEDE3CC));path.position.y=TOP+.01;path.rotation.y=r()*Math.PI;path.receiveShadow=true;g.add(path);
+  const n=I.b.length;const slots=[];const off=r()*.5;
+  if(n===1)slots.push([0,0]);
+  else if(n<=6){for(let k=0;k<n;k++){const a=k/n*Math.PI*2+off;slots.push([Math.cos(a)*2.45,Math.sin(a)*2.45])}}
+  else{for(let k=0;k<3;k++){const a=k/3*Math.PI*2+off+.5;slots.push([Math.cos(a)*1.05,Math.sin(a)*1.05])}const m=n-3;for(let k=0;k<m;k++){const a=k/m*Math.PI*2+off;slots.push([Math.cos(a)*2.95,Math.sin(a)*2.95])}}
+  const sc=n>6?.66:n>4?.8:1;
+  const isl={g,i,x,z,lamps:[],lift:0};
+  I.b.forEach((b,bi)=>{const [sx,sz]=slots[bi];const bld=building(b,bi,i);bld.scale.setScalar(sc);bld.position.set(sx,TOP,sz);
+    bld.rotation.y=n===1?.6:Math.atan2(sx,sz);bld.traverse(o=>{o.userData.branch=bi});g.add(bld);isl.lamps.push(bld.userData)});
+  let placed=0,tries=0;const want=n===1?10:n>6?3:6;
+  while(placed<want&&tries++<300){const a=r()*6.283,rad=.9+r()*2.6;const tx=Math.cos(a)*rad,tz=Math.sin(a)*rad;if(slots.some(s=>Math.hypot(s[0]-tx,s[1]-tz)<1.6*sc))continue;
+    const s=.55+r()*.45;const tr=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.08*s,.1*s,.5*s,6),mat(0x8B5E3C));trunk.position.y=.25*s;tr.add(trunk);
+    const crown=r()>.5?new THREE.Mesh(new THREE.SphereGeometry(.5*s,8,6),mat(r()>.5?0x5FA55A:0x76B84F)):new THREE.Mesh(new THREE.ConeGeometry(.5*s,1.2*s,7),mat(0x4E9556));crown.position.y=.8*s;crown.castShadow=true;tr.add(crown);
+    tr.position.set(tx,TOP,tz);g.add(tr);placed++}
+  for(let k=0;k<3;k++){const p=new THREE.Group();const c=[0xF2A541,0x2E86AB,0xE4572E,0x8E6C8A][(i+k)%4];
+    const bd=new THREE.Mesh(new THREE.CylinderGeometry(.13,.17,.4,8),mat(c));bd.position.y=.2;p.add(bd);const hd=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),mat(0xF5D6B4));hd.position.y=.52;p.add(hd);
+    const bk=new THREE.Mesh(new THREE.BoxGeometry(.18,.12,.04),mat(ROOFS[(i+k+2)%7]));bk.position.set(0,.32,.16);p.add(bk);
+    p.traverse(o=>{o.castShadow=true});g.add(p);W3.walkers.push({p,isl:i,rad:3.55+k*.1,sp:(.25+r()*.2)*(k%2?1:-1),ph:r()*6,top:TOP})}
+  W3.islands.push(isl);
+}
+function building(b,bi,i){
+  const B=new THREE.Group();const name=b.n,kind=kindOf(name);const closed=!!b.closed;
+  const roof=closed?0x9AA0A0:ROOFS[(i*3+bi)%ROOFS.length];
+  const wallC=closed?0xD9D4CB:0xFFF6E6;let lampY=2.2;const win=[];
+  const addWin=(x,y,z,w,h)=>{const m=new THREE.MeshStandardMaterial({color:0x6b7f86,emissive:0xFFC966,emissiveIntensity:0,roughness:.4});const wm=new THREE.Mesh(new THREE.BoxGeometry(w,h,.04),m);wm.position.set(x,y,z);B.add(wm);win.push(m)};
+  if(kind==='main'){
+    for(let f=0;f<4;f++){const fl=new THREE.Mesh(new THREE.BoxGeometry(3.4-f*.35,.9,2.6-f*.25),mat(f%2?0xFFF0D6:wallC));fl.position.y=.45+f*.9;fl.castShadow=fl.receiveShadow=true;B.add(fl);
+      for(let k=-1;k<=1;k++)addWin(k*.8,.5+f*.9,(2.6-f*.25)/2+.01,.45,.4)}
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,1.4,6),mat(0x8B5E3C));pole.position.y=4.2;B.add(pole);
+    const flag=new THREE.Mesh(new THREE.BoxGeometry(.7,.4,.03),mat(0xE4572E));flag.position.set(.35,4.7,0);B.add(flag);lampY=5.2;
+    [0xE4572E,0x2E86AB,0xF2A541,0x6BAA75].forEach((c,k)=>{const bk=new THREE.Mesh(new THREE.BoxGeometry(1,.2,.7),mat(c));bk.position.set(2.4,.1+k*.2,.6);bk.rotation.y=k*.15;bk.castShadow=true;B.add(bk)});
+  } else if(kind==='smart'||kind==='fastbook'||kind==='station'){
+    const tall=kind==='smart'?1.9:kind==='fastbook'?1.6:1.2;
+    const k=new THREE.Mesh(new THREE.BoxGeometry(kind==='smart'?1.4:1,tall,.8),mat(kind==='station'?0xC79A63:0x2E7F86));k.position.y=tall/2;k.castShadow=true;B.add(k);
+    const scr=new THREE.MeshStandardMaterial({color:0x9fe3ff,emissive:0x6fd3ff,emissiveIntensity:.6});const s=new THREE.Mesh(new THREE.BoxGeometry(.6,.5,.04),scr);s.position.set(0,tall*.65,.41);B.add(s);win.push(scr);
+    const cap=new THREE.Mesh(new THREE.BoxGeometry(kind==='smart'?1.6:1.2,.12,1),mat(roof));cap.position.y=tall+.06;B.add(cap);lampY=tall+.5;
+    if(kind==='fastbook'){for(let j=0;j<3;j++){const bk=new THREE.Mesh(new THREE.BoxGeometry(.18,.12,.3),mat(ROOFS[j+2]));bk.position.set(-.2+j*.2,tall*.3,.42);B.add(bk)}}
+  } else {
+    const small=kind==='room';const w=small?1.3:1.7,h=small?.9:1.15,dp=small?1.1:1.4;
+    const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,dp),mat(wallC));body.position.y=h/2;body.castShadow=body.receiveShadow=true;B.add(body);
+    const rf=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,dp)*.78,.8,4),mat(roof));rf.rotation.y=Math.PI/4;rf.position.y=h+.4;rf.scale.set(w/Math.max(w,dp),1,dp/Math.max(w,dp));rf.castShadow=true;B.add(rf);
+    const door=new THREE.Mesh(new THREE.BoxGeometry(.34,.55,.04),mat(closed?0x777777:0x8B5E3C));door.position.set(0,.28,dp/2+.01);B.add(door);
+    if(closed){[-.3,.3].forEach(dx=>{const plank=new THREE.Mesh(new THREE.BoxGeometry(.5,.08,.05),mat(0xA97C50));plank.position.set(dx*.4,.32,dp/2+.04);plank.rotation.z=dx>0?.6:-.6;B.add(plank)})}
+    else{addWin(-w*.3,h*.62,dp/2+.01,.3,.28);addWin(w*.3,h*.62,dp/2+.01,.3,.28);
+      for(let k=0;k<3;k++){const bk=new THREE.Mesh(new THREE.BoxGeometry(.12,.42+k*.05,.3),mat(ROOFS[(bi+k+i)%7]));bk.position.set(w/2+.12+k*.13,.22,dp/2-.2);bk.rotation.z=k===2?-.25:0;bk.castShadow=true;B.add(bk)}}
+    lampY=h+1.05;
+  }
+  if(evFor(name).length){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1,5),mat(0x5a3a26));pole.position.set(-.7,lampY-.2,0);B.add(pole);
+    const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(.55,-.18);sh.lineTo(0,-.36);const pen=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshStandardMaterial({color:0xE4572E,side:THREE.DoubleSide}));pen.position.set(-.7,lampY+.28,0);B.add(pen)}
+  const bulbM=new THREE.MeshStandardMaterial({color:0xA0A7A6,emissive:0x000000,roughness:.3});const bulb=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),bulbM);bulb.position.y=lampY;B.add(bulb);
+  B.userData={b,bulbM,win,bulb};return B;
+}
+function hubPos(i){const I=W3.islands[i];return new THREE.Vector3(I.x,.25,I.z)}
+function buildRoutes(){
+  // 水道網：每個六角格的邊界正好落在島與島之間的水道上
+  const RC=HEXR*GAP,cells=new Map(),key=(q,r)=>q+','+r;
+  const DIRS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+  ISLANDS.forEach(I=>{cells.set(key(I.q,I.r),[I.q,I.r]);DIRS.forEach(([dq,dr])=>cells.set(key(I.q+dq,I.r+dr),[I.q+dq,I.r+dr]))});
+  const V=new Map(),adj=new Map();const vk=(x,z)=>Math.round(x*10)+','+Math.round(z*10);
+  const addV=(x,z)=>{const k=vk(x,z);if(!V.has(k)){V.set(k,new THREE.Vector3(x,.12,z));adj.set(k,new Set())}return k};
+  cells.forEach(([q,r])=>{const [x0,z0]=axial(q,r);const cx=x0-W3.c[0],cz=z0-W3.c[1];const ks=[];
+    for(let k=0;k<6;k++){const a=k*Math.PI/3;ks.push(addV(cx+Math.cos(a)*RC,cz+Math.sin(a)*RC))}
+    for(let k=0;k<6;k++){const a=ks[k],b=ks[(k+1)%6];adj.get(a).add(b);adj.get(b).add(a)}});
+  const corners=i=>{const I=W3.islands[i];const out=[];for(let k=0;k<6;k++){const a=k*Math.PI/3;out.push(vk(I.x+Math.cos(a)*RC,I.z+Math.sin(a)*RC))}return out};
+  const nearest=(list,p)=>list.reduce((best,k)=>V.get(k).distanceTo(p)<V.get(best).distanceTo(p)?k:best,list[0]);
+  function path(src,dst){const dist=new Map([[src,0]]),prev=new Map(),todo=new Set([src]);
+    while(todo.size){let u=null;todo.forEach(k=>{if(u===null||dist.get(k)<dist.get(u))u=k});todo.delete(u);if(u===dst)break;
+      adj.get(u).forEach(v=>{const d=dist.get(u)+V.get(u).distanceTo(V.get(v));if(!dist.has(v)||d<dist.get(v)){dist.set(v,d);prev.set(v,u);todo.add(v)}})}
+    const out=[];let k=dst;while(k!==undefined){out.unshift(V.get(k).clone());k=prev.get(k)}return out}
+  const grp=new THREE.Group();W3.scene.add(grp);W3.routes=grp;W3.paths=[];
+  const hub=W3.islands[0];
+  for(let i=1;i<W3.islands.length;i++){const I=W3.islands[i];
+    const src=nearest(corners(0),new THREE.Vector3(I.x,0,I.z));const cs=corners(i).sort((a,b)=>V.get(a).distanceTo(V.get(src))-V.get(b).distanceTo(V.get(src)));const dst=cs.find(k=>k!==src&&V.get(k).distanceTo(V.get(src))>3)||cs[1];
+    const pts=path(src,dst);if(pts.length<2)continue;
+    const curve=new THREE.CurvePath();for(let k=0;k<pts.length-1;k++)curve.add(new THREE.LineCurve3(pts[k],pts[k+1]));
+    W3.paths.push({curve,a:0,b:i,len:curve.getLength()});
+    const geo=new THREE.BufferGeometry().setFromPoints(pts.map(p=>p.clone().setY(.04)));const line=new THREE.Line(geo,new THREE.LineDashedMaterial({color:0xFFFFFF,dashSize:.6,gapSize:.45,transparent:true,opacity:.85}));line.computeLineDistances();line.userData={a:0,b:i};grp.add(line)}
+}
+function buildBoats(){
+  W3.paths.forEach((p,k)=>{const b=new THREE.Group();const hull=new THREE.Mesh(new THREE.BoxGeometry(1.1,.3,.6),mat(0xC79A63));hull.position.y=.1;b.add(hull);
+    const bow=new THREE.Mesh(new THREE.ConeGeometry(.3,.5,4),mat(0xC79A63));bow.rotation.z=-Math.PI/2;bow.rotation.x=Math.PI/4;bow.scale.set(1,1,.95);bow.position.set(.78,.1,0);b.add(bow);
+    const rim=new THREE.Mesh(new THREE.BoxGeometry(1.15,.08,.65),mat(0xE4572E));rim.position.y=.28;b.add(rim);
+    for(let j=0;j<3;j++){const bk=new THREE.Mesh(new THREE.BoxGeometry(.3,.16,.45),mat(ROOFS[(k+j)%7]));bk.position.set(-.3+j*.3,.4+(j%2)*.06,0);b.add(bk)}
+    const fl=new THREE.Mesh(new THREE.BoxGeometry(.3,.18,.02),mat(0xE0A526));fl.position.set(-.45,.85,0);b.add(fl);const ms=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.6,5),mat(0x5a3a26));ms.position.set(-.55,.65,0);b.add(ms);
+    b.scale.setScalar(1.35);b.traverse(o=>{if(o.isMesh)o.castShadow=true});W3.scene.add(b);
+    W3.boats.push({b,p,u:(k*.29)%1,dir:k%2?1:-1,speed:2.2+(k%4)*.35,wait:0})});
+  // 外圈巡航：三艘船沿著群島外海繞圈
+  let R=0;W3.islands.forEach(I=>R=Math.max(R,Math.hypot(I.x,I.z)));R+=HEXR*GAP+3;
+  const ring=[];for(let k=0;k<64;k++){const a=k/64*Math.PI*2;ring.push(new THREE.Vector3(Math.cos(a)*R*1.08,.12,Math.sin(a)*R*.92))}
+  const rc=new THREE.CatmullRomCurve3(ring,true);const rp={curve:rc,len:rc.getLength(),loop:true};
+  const rl=new THREE.Line(new THREE.BufferGeometry().setFromPoints(rc.getPoints(200).map(q=>q.setY(.04))),new THREE.LineDashedMaterial({color:0xFFFFFF,dashSize:.9,gapSize:.9,transparent:true,opacity:.5}));rl.computeLineDistances();rl.userData={a:-1,b:-1};W3.routes.add(rl);
+  for(let k=0;k<3;k++){const src=W3.boats[k%W3.boats.length].b.clone();src.scale.setScalar(1.8);W3.scene.add(src);W3.boats.push({b:src,p:rp,u:k/3,dir:1,speed:3.2,wait:0})}
+}
+/* camera */
+function home(instant){const p=new THREE.Vector3(0,68,78),t=new THREE.Vector3(0,0,4);if(S.bird){p.set(0,105,.1)}fly(p,t,instant)}
+function fly(p,t,instant){if(!W3.ok)return;if(instant||REDUCE){W3.cam.position.copy(p);W3.ctl.target.copy(t);W3.ctl.update();W3.fly=null}else W3.fly={p:p.clone(),t:t.clone()}}
+function focusIsland(i){const I=W3.islands[i];const mobile=innerWidth<=760;const t=new THREE.Vector3(I.x,0,I.z+(mobile?6:0));
+  const dir=W3.cam.position.clone().sub(W3.ctl.target).setY(0);if(dir.length()<1)dir.set(0,0,1);dir.normalize();
+  fly(t.clone().add(dir.multiplyScalar(22)).setY(20),t)}
+/* lighting by minute */
+const KEYS=[[0,0x0E1B33,0x16284a,.15,.25],[300,0x22325a,0x3a4a70,.25,.3],[360,0xF6C9B4,0xF8E2D2,.75,.5],[480,0xBFE3F0,0xE8F6F8,1,.6],[720,0xA8DDF2,0xE6F5FA,1.1,.62],[1020,0xC3DCE6,0xF3E6D3,.95,.55],[1080,0xF2A56E,0xF9D3A8,.7,.45],[1170,0x6A5A8E,0x9a7f9a,.35,.32],[1260,0x13203C,0x1c2b4c,.15,.25],[1440,0x0E1B33,0x16284a,.15,.25]];
+function lerpC(a,b,k){const A=new THREE.Color(a),B=new THREE.Color(b);return A.lerp(B,k)}
+function applyLight(min){
+  let i=0;while(i<KEYS.length-2&&KEYS[i+1][0]<=min)i++;const A=KEYS[i],B=KEYS[i+1];const k=(min-A[0])/(B[0]-A[0]);
+  const sky=lerpC(A[1],B[1],k),fogC=lerpC(A[2],B[2],k);const si=A[3]+(B[3]-A[3])*k,hi=A[4]+(B[4]-A[4])*k;
+  W3.scene.background=sky;W3.scene.fog=new THREE.Fog(fogC,110,300);
+  const ang=(min-360)/720*Math.PI;const el=Math.sin(ang);
+  W3.sun.position.set(Math.cos(ang)*-70,Math.max(12,el*80),40);W3.sun.intensity=si;W3.sun.color=lerpC(0xFFD0A0,0xFFFFFF,Math.max(0,el));
+  W3.hemi.intensity=hi;W3.amb.intensity=.12+hi*.25;
+  const night=min<350||min>1150;W3.night=night;W3.stars.material.opacity=night?.9:0;
+  W3.water.material.color=lerpC(0x1E4E66,0x6CC3C4,Math.max(0,Math.min(1,el*1.6+.2)));
+}
+function applyStatus(t){
+  W3.islands.forEach(I=>I.lamps.forEach(L=>{const s=status(L.b,t).s;const bh=S.bookHits&&!S.filter?S.bookHits[L.b.n]:null;if(S.bookHits&&!S.filter){const col=new THREE.Color(bh?(bh.shelf||bh.topic?'#F5B921':'#E07A5F'):'#B9BDBC');L.bulbM.color=col;L.bulbM.emissive=col;L.bulbM.emissiveIntensity=bh?1.4:0;L.bulb.scale.setScalar(bh?2.1:1);L.win.forEach(m=>{m.emissiveIntensity=(s!=='closed')?(W3.night?1.1:.15):0});return}const hitF=S.filter&&matchF(L.b,S.filter);
+    const col=new THREE.Color(S.filter?(hitF?'#F5B921':'#B9BDBC'):SCOL[s]);L.bulbM.color=col;L.bulbM.emissive=col;
+    L.bulbM.emissiveIntensity=S.filter?(hitF?1.3:0):(s==='closed'?0:(W3.night?1.2:.5));L.bulb.scale.setScalar(hitF?1.9:1);
+    L.win.forEach(m=>{m.emissiveIntensity=(s!=='closed')?(W3.night?1.1:.15):0})}));
+}
+function loop(){
+  requestAnimationFrame(loop);if(!W3.visible)return;
+  const now=performance.now();const dt=Math.min(.05,(now-(W3.last||now))/1000);W3.last=now;if(!S.paused)W3.t+=dt;const t=W3.t;
+  if(W3.fly){W3.cam.position.lerp(W3.fly.p,.08);W3.ctl.target.lerp(W3.fly.t,.08);if(W3.cam.position.distanceTo(W3.fly.p)<.2)W3.fly=null}
+  W3.islands.forEach((I,i)=>{const want=(i===S.sel?.9:i===W3.hover?.35:0);I.lift+=(want-I.lift)*.12;I.g.position.y=I.lift+(REDUCE?0:Math.sin(t*.6+i)*.05)});
+  if(!S.paused){
+    W3.walkers.forEach(w=>{const a=w.ph+t*w.sp;w.p.position.set(Math.cos(a)*w.rad,w.top+Math.abs(Math.sin(t*6+w.ph))*.06,Math.sin(a)*w.rad);w.p.rotation.y=-a+(w.sp>0?Math.PI:0)});
+    W3.boats.forEach(B=>{if(B.p.loop){B.u=(B.u+dt*B.speed*(REDUCE?.4:1)/B.p.len)%1}else if(B.wait>0){B.wait-=dt;}else{B.u+=dt*B.speed*(REDUCE?.4:1)/B.p.len*B.dir;if(B.u>=1){B.u=1;B.dir=-1;B.wait=1.2}else if(B.u<=0){B.u=0;B.dir=1;B.wait=1.2}}
+      const pos=B.p.curve.getPointAt(B.u),nx=B.p.curve.getPointAt(Math.min(1,Math.max(0,B.u+.004*B.dir)));
+      B.b.position.set(pos.x,Math.sin(t*2+B.u*9)*.05,pos.z);if(nx.distanceTo(pos)>1e-4){B.b.lookAt(nx.x,B.b.position.y,nx.z);B.b.rotateY(-Math.PI/2)}});
+  }
+  if(W3.quest){const Q=W3.quest;if(!S.paused&&Q.u<1)Q.u=Math.min(1,Q.u+dt*4.5/Q.p.len);const pos=Q.p.curve.getPointAt(Q.u),nx=Q.p.curve.getPointAt(Math.min(1,Q.u+.01));Q.b.position.set(pos.x,.05+Math.sin(t*2.4)*.06,pos.z);if(Q.u<1&&nx.distanceTo(pos)>1e-4){Q.b.lookAt(nx.x,Q.b.position.y,nx.z);Q.b.rotateY(-Math.PI/2)}}
+  W3.boats.forEach(B=>B.b.visible=S.boats);W3.routes.visible=S.routes;
+  W3.routes.children.forEach(l=>{const on=S.sel<0||l.userData.b===S.sel;l.material.opacity=l.userData.b<0?.45:(on?.9:.15)});
+  W3.ctl.update();W3.ren.render(W3.scene,W3.cam);
+  placeLabels();
+}
+/* labels */
+const labEls=[];
+function makeLabels(){const box=document.getElementById('labels');ISLANDS.forEach((I,i)=>{const d=document.createElement('button');d.type='button';d.className='lab';d.id='lab-'+i;
+  d.innerHTML=`<span class="no">${pad(i+1)}</span><span class="od"></span><span>${I.k}</span><span class="fc"></span>`;d.onclick=()=>select(i);box.appendChild(d);labEls.push(d)})}
+const _v=window.THREE?new THREE.Vector3():null;
+function placeLabels(){if(!S.labels)return;const r=W3.ren.domElement.getBoundingClientRect();
+  W3.islands.forEach((I,i)=>{_v.set(I.x,I.g.position.y+(i===0?6.4:3.4),I.z).project(W3.cam);const el=labEls[i];if(_v.z>1){el.style.display='none';return}el.style.display='';
+    el.style.left=((_v.x+1)/2*r.width)+'px';el.style.top=((1-_v.y)/2*r.height)+'px'})}
+
+/* ================= UI ================= */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICON={labels:'<path d="M4 7h10l4 5-4 5H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+ boats:'<path d="M3 14h18l-3 5H6z M8 14V9h4v5 M12 11h4v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+ routes:'<circle cx="6" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 15.5C10 9 13 13 16.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2.5 2.5"/>',
+ paused:'<path d="M8 6v12M16 6v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+ bird:'<path d="M12 4l8 4-8 4-8-4z M4 12l8 4 8-4 M4 16l8 4 8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+ log:'<path d="M6 4h9l3 3v13H6z M9 10h6M9 13h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>'};
+const TOOLS=[['labels','名牌'],['boats','借書船'],['routes','通借航線'],['paused','暫停'],['bird','鳥瞰'],['log','日誌']];
+const TOTAL=ISLANDS.reduce((a,I)=>a+I.b.length,0);
+const islName=I=>I.k==='總館'?'總館港':I.k==='智慧與自動借書'?'智慧航標':I.k+'島';
+function renderTools(){
+  $('timeSeg').innerHTML=SIMS.map(([l,v],k)=>`<button type="button" id="tm-${k}" aria-pressed="${S.sim===v}">${k===0?'<span class="live"></span>':''}${l}${v!=null?' <span class="mono" style="font-size:10.5px;opacity:.7">'+fm(v)+'</span>':''}</button>`).join('');
+  SIMS.forEach(([l,v],k)=>$('tm-'+k).onclick=()=>{S.sim=v;renderTools();tick()});
+  $('toolBar').innerHTML=TOOLS.map(([k,l])=>{const on=k==='log'?!$('log').hidden:S[k];return`<button type="button" id="tool-${k}" aria-pressed="${!!on}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>${l}</button>`}).join('');
+  TOOLS.forEach(([k])=>$('tool-'+k).onclick=()=>{
+    if(k==='log'){toggleLog();return}
+    S[k]=!S[k];if(k==='labels')$('labels').classList.toggle('hideLabels',!S.labels);if(k==='bird')home();renderTools()});
+}
+function tick(){
+  const t=nowT();if(W3.ok){applyLight(t.min);applyStatus(t)}
+  let o=0,n=0;ISLANDS.forEach((I,i)=>{const s=islandStats(i,t);o+=s.o;n+=s.n;const el=labEls[i];if(el){const fc=S.filter?I.b.filter(b=>matchF(b,S.filter)).length:S.bookHits?I.b.filter(b=>S.bookHits[b.n]).length:0;
+    el.querySelector('.od').style.background=s.o?SCOL.open:SCOL.closed;el.querySelector('.fc').textContent=(S.filter||S.bookHits)&&fc?fc:'';el.classList.toggle('dim',!!(S.filter||S.bookHits)&&!fc)}});
+  $('liveText').innerHTML=`${S.sim==null?'LIVE':'模擬'} <b>${fm(t.min)}</b> · ${o}/${n} 個據點開放中`;
+  $('indexMeta').textContent=`14 座島 ／ ${TOTAL} 個服務據點 · ${S.sim==null?'現在':fm(t.min)} ${o} 處開放`;
+  renderList();if(S.sel>=0)renderDetail(S.sel,null,true);if(!$('log').hidden)renderLog();
+}
+function rowB(i,bi,b,t){const s=status(b,t);return`<button type="button" class="row" data-i="${i}" data-b="${bi}"><span class="n">${pad(i+1)}</span><span class="t">${esc(b.n)}<small>${esc(b.f?'館藏特色：'+b.f:islName(ISLANDS[i]))}</small></span><span class="c"><span class="st ${s.s}">${esc(s.label)}</span><br>${esc(s.hours)}</span></button>`}
+function renderList(){
+  const t=nowT();const q=S.query.trim();const el=$('list');let html='';
+  const hit=(I,b)=>!q||(b.n+b.f+b.a+I.k+I.tag).includes(q);
+  if(S.tab==='isl'){
+    ISLANDS.forEach((I,i)=>{const hb=q?I.b.filter(b=>hit(I,b)):[];if(q&&!hb.length&&!(I.k+I.tag).includes(q))return;const s=islandStats(i,t);
+      html+=`<button type="button" class="row${S.sel===i?' sel':''}" data-i="${i}"><span class="n">${pad(i+1)}</span><span class="t">${esc(islName(I))}<small>${esc(hb.length?'找到：'+hb.map(b=>b.n).join('、'):I.tag)}</small></span><span class="c">${s.n?`<b>${s.o}</b>/${s.n} 開`:'自助站'}<br>${I.b.length} 處 ↗</span></button>`});
+  } else if(S.tab==='open'){
+    ISLANDS.forEach((I,i)=>I.b.forEach((b,bi)=>{const s=status(b,t);if(!isOpen(s.s)||!hit(I,b))return;html+=rowB(i,bi,b,t)}));
+    if(!html)html=`<p class="foot" style="padding:12px 4px">${fm(t.min)} 沒有開放中的據點。東區地下街與松山機場智慧圖書館每天開到午夜，可以切到「白天」看看。</p>`;
+  } else {
+    html+=`<div class="sect" style="margin:4px 2px">依設施找館</div><div class="fchips">${FILTERS.map(([k,l])=>`<button type="button" class="fchip" data-f="${k}" aria-pressed="${S.filter===k}">${esc(l)}</button>`).join('')}</div>`;
+    if(S.filter){const lab=FILTERS.find(f=>f[0]===S.filter)[1];let cnt=0,rows='';ISLANDS.forEach((I,i)=>I.b.forEach((b,bi)=>{if(matchF(b,S.filter)&&hit(I,b)){cnt++;rows+=rowB(i,bi,b,t)}}));
+      html+=`<p class="foot" style="margin:6px 2px">有「${esc(lab)}」的據點共 ${cnt} 處，地圖上以黃色燈號標示。<button type="button" class="linkbtn" id="fclear">清除</button></p>${rows}`}
+    html+=`<div class="sect" style="margin:12px 2px 4px">我要借書・常用服務</div><div class="svcs">${SERVICES.filter(s=>!q||(s[1]+s[2]).includes(q)).map(s=>`<a class="svc" href="${s[3]}" target="_blank" rel="noopener"><span class="sk">${esc(s[0])}</span><b>${esc(s[1])} ↗</b><span>${esc(s[2])}</span></a>`).join('')}</div>`;
+  }
+  if(!html)html='<p class="foot" style="padding:12px 4px">找不到符合的島或據點，換個關鍵字試試，例如「漫畫」「天文」「萬華」。</p>';
+  el.innerHTML=html;
+  el.querySelectorAll('.row').forEach(r=>r.onclick=()=>select(+r.dataset.i,r.dataset.b!=null?+r.dataset.b:null));
+  el.querySelectorAll('.fchip').forEach(c=>c.onclick=()=>{S.filter=S.filter===c.dataset.f?null:c.dataset.f;tick()});
+  const fc=$('fclear');if(fc)fc.onclick=()=>{S.filter=null;tick()};
+}
+function select(i,bi,keepScroll){
+  S.sel=i;labEls.forEach((l,k)=>l.classList.toggle('sel',k===i));
+  if(W3.ok&&!keepScroll)focusIsland(i);renderDetail(i,bi);renderList();
+  if(innerWidth<=760)$('index').classList.add('min');
+}
+function itemHTML(b,k,bi,t){
+  const st=status(b,t);const c=CLOSURE[b.n];
+  const note=[NOTE[b.n],c&&t.ymd<c[0]?`${c[0].slice(5).replace('-','/')} 起因${c[2]}閉館，至 ${c[1].replace(/-/g,'/')}。`:'',b.night?'夜間智慧圖書館：週二至週六 17:00–21:00 無館員，自助借還，辦證改視訊。':'',b.seat?'自修室可線上預約座位。':''].filter(Boolean);
+  const ev=evFor(b.n);const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(b.a.replace(/（.*?）/g,''));
+  const amen=[...b.s].map(ch=>AM[ch]).filter(Boolean);
+  return`<div class="bitem" id="bi-${k}"${bi===k?' style="border-color:var(--roof);box-shadow:0 0 0 1px var(--roof)"':''}>
+    <div class="top"><b>${esc(b.n)}</b><span class="st ${st.s}">${esc(st.label)}</span></div>
+    ${b.f?`<div class="th">館藏特色：${esc(b.f)}</div>`:''}
+    ${st.hours?`<div class="hr">今日 ${esc(st.hours)}</div>`:''}
+    <dl class="kv"><dt>地址</dt><dd>${esc(b.a)}</dd><dt>電話</dt><dd class="mono">${esc(fmtTel(b.t))}</dd></dl>
+    ${amen.length?`<div class="amen">${amen.map(a=>`<span${S.filter&&AM[S.filter]===a?' class="on"':''}>${esc(a)}</span>`).join('')}</div>`:''}
+    ${b.n.includes('FastBook')?`<ul class="sites">${FASTBOOK.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}
+    ${note.map(x=>`<div class="nt">${esc(x)}</div>`).join('')}
+    ${ev.length?`<div class="evs">${ev.slice(0,3).map(e=>`<a href="${EV_URL+e[4]}" target="_blank" rel="noopener"><span class="et">${esc(e[2])}</span>${esc(e[3])} ↗</a>`).join('')}</div>`:''}
+    <div class="lk">${b.n.includes('FastBook')?'':`<a href="${map}" target="_blank" rel="noopener">地圖 ↗</a>`}<a href="https://book.tpml.edu.tw/" target="_blank" rel="noopener">館藏查詢 ↗</a>${b.seat?'<a href="https://seat.tpml.edu.tw/sm/" target="_blank" rel="noopener">座位預約 ↗</a>':''}</div></div>`;
+}
+function renderDetail(i,bi,soft){
+  if(soft&&$('detail').dataset.mode==='book')return;$('detail').dataset.mode='';
+  const I=ISLANDS[i],t=nowT(),s=islandStats(i,t),el=$('detail');el.hidden=false;
+  const prevScroll=soft&&el.querySelector('.db')?el.querySelector('.db').scrollTop:0;
+  const evN=I.b.reduce((a,b)=>a+evFor(b.n).length,0);
+  el.innerHTML=`<button class="x" type="button" id="dx" aria-label="關閉">×</button>
+   <div class="dh"><div class="eyebrow">Island ${pad(i+1)} · ${esc(I.area||I.k)}</div><h3>${esc(islName(I))}</h3><div class="tag">${esc(I.tag)}</div>
+   <div class="chips"><span class="chip"><span class="od" style="background:${s.o?SCOL.open:SCOL.closed}"></span>${s.n?`${s.o}/${s.n} 開放中`:'自助站點'}</span><span class="chip">${I.b.length} 個據點</span>${evN?`<span class="chip">⚑ ${evN} 則近期活動</span>`:''}</div></div>
+   <div class="db"><div class="sect">據點與服務</div>${I.b.map((b,k)=>itemHTML(b,k,bi,t)).join('')}
+   <div class="sect">通借通還</div><p class="th" style="margin:0">各島館藏都能預約調到你方便的分館或 FastBook 站取書，借完可到任一館歸還，也能用超商還書。</p></div>`;
+  $('dx').onclick=closeDetail;
+  if(soft)el.querySelector('.db').scrollTop=prevScroll;
+  else if(bi!=null){const b=$('bi-'+bi);if(b)b.scrollIntoView({block:'nearest'})}
+}
+function closeDetail(){$('detail').dataset.mode='';S.sel=-1;$('detail').hidden=true;labEls.forEach(l=>l.classList.remove('sel'));renderList();if(innerWidth<=760)$('index').classList.remove('min')}
+function toggleLog(){const L=$('log');L.hidden=!L.hidden;if(!L.hidden)renderLog();renderTools()}
+function renderLog(){
+  const t=nowT();let o=0,n=0,cl=0;ISLANDS.forEach((I,i)=>{const s=islandStats(i,t);o+=s.o;n+=s.n});
+  ISLANDS.forEach(I=>I.b.forEach(b=>{if(hoursFor(b,t).kind==='closed')cl++}));
+  const bars=[];for(let h=0;h<24;h++){let c=0;const tt=Object.assign({},t,{min:h*60+30});ISLANDS.forEach(I=>I.b.forEach(b=>{if(isOpen(status(b,tt).s))c++}));bars.push(c)}
+  const mx=Math.max(1,...bars);const nowH=Math.floor(t.min/60);const dn=['日','一','二','三','四','五','六'][t.dow];
+  $('log').innerHTML=`<div class="lh"><div><div class="eyebrow">City Log · ${t.ymd.replace(/-/g,'/')}（${dn}）</div><h3 style="font-size:19px">群島日誌</h3></div><button class="x" type="button" id="lx" aria-label="關閉日誌" style="position:static">×</button></div>
+   <div class="lb"><div class="stat"><div><b>${o}</b><span>開放中</span></div><div><b>${n-o}</b><span>未開放</span></div><div><b>${cl}</b><span>今日休館或閉館</span></div></div>
+   <div><div class="sect" style="margin:0 0 4px">今天各時段開放的據點數</div><div class="hourbar">${bars.map((c,h)=>`<i class="${h===nowH?'now':''}" style="height:${Math.max(4,c/mx*100)}%" title="${pad(h)}:00 ${c} 處"></i>`).join('')}</div><div class="hb-x"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>
+   <div class="sect" style="margin:0">開館異動</div>${NEWS.map(e=>`<div class="ev"><span class="d">${esc(e[0])}</span><span>${esc(e[1])}</span></div>`).join('')}
+   <div class="sect" style="margin:0">服務訊息</div>${SVCNEWS.map(e=>`<div class="ev"><span class="d">${esc(e[0])}</span><a href="${SVCNEWS_URL+e[2]}" target="_blank" rel="noopener">${esc(e[1])} ↗</a></div>`).join('')}
+   <div class="sect" style="margin:0">近期活動</div>${EVENTS.slice(0,10).map(e=>`<div class="ev"><span class="d">${esc(e[0])}</span><a href="${EV_URL+e[4]}" target="_blank" rel="noopener">${esc(e[1])}・${esc(e[3])} ↗</a></div>`).join('')}
+   <p class="foot" style="margin:0">一般分館週二至週六 08:30–21:00，週日、週一 09:00–17:00；國定假日與每月第一個星期四休館。<a href="https://tpml.gov.taipei/News.aspx?n=3951678DEC0A8461&sms=9D72E82EC16F3E64" target="_blank" rel="noopener">全部活動 ↗</a></p></div>`;
+  $('lx').onclick=toggleLog;
+}
+/* quiz（依官網館藏特色） */
+const QUIZ=[
+ ['週末最想做的事？',[['出門走走、曬太陽',['王貫英先生紀念圖書館','北投分館','清江分館']],['窩著追一個好故事',['道藩分館','中崙分館','力行分館']],['動手做點東西',['城中分館','六合分館','葫蘆堵分館']],['看展、聽音樂',['三民分館','西湖分館','石牌分館']]]],
+ ['最近最卡的是？',[['工作與職涯',['中山分館','長安分館','三興分館']],['身體與作息',['葫蘆堵分館','西園分館','清江分館']],['家庭與照顧',['民生分館','內湖分館']],['靈感與創作',['三民分館','東湖分館','大直分館']]]],
+ ['你通常什麼時候讀書？',[['一早出門前',['總館','東區地下街智慧圖書館']],['下午慢慢讀',['文山分館','道藩分館']],['晚上下班後',['建成分館','三興分館']],['通勤零碎時間',['FastBook 全自動借書站','松山機場智慧圖書館']]]],
+ ['最想多認識的世界？',[['臺灣與在地',['建成分館','延平分館','萬華分館','南港分館']],['宇宙與自然',['士林分館','舊莊分館','吉利分館']],['人物與人生',['永春分館','西中分館']],['遠方與異國',['天母分館','王貫英先生紀念圖書館','萬興分館']]]]
+];
+let qz={k:0,sc:{}};
+function openQuiz(){qz={k:0,sc:{}};$('scrim').hidden=false;renderQuiz()}
+function renderQuiz(){
+  const m=$('modal');
+  if(qz.k<QUIZ.length){const [q,opts]=QUIZ[qz.k];
+    m.innerHTML=`<div class="mrow"><div class="eyebrow">Reader Type · ${qz.k+1}/${QUIZ.length}</div><button type="button" id="mx" aria-label="關閉" style="border:0;background:none;font-size:20px;cursor:pointer">×</button></div><h3>${esc(q)}</h3>
+     <div class="opts">${opts.map((o,j)=>`<button type="button" id="qo-${j}">${esc(o[0])}</button>`).join('')}</div><div class="dots">${QUIZ.map((_,j)=>`<i class="${j<=qz.k?'on':''}"></i>`).join('')}</div>`;
+    opts.forEach((o,j)=>$('qo-'+j).onclick=()=>{o[1].forEach((b,w)=>qz.sc[b]=(qz.sc[b]||0)+3-w);qz.k++;renderQuiz()});
+  } else {
+    const best=Object.entries(qz.sc).sort((a,b)=>b[1]-a[1])[0][0];let ii=-1,bi=0;ISLANDS.forEach((I,i)=>I.b.forEach((b,k)=>{if(b.n===best&&ii<0){ii=i;bi=k}}));if(ii<0){ii=0;bi=0}
+    const I=ISLANDS[ii],b=I.b[bi];
+    m.innerHTML=`<div class="eyebrow">你的島</div><h3>${esc(islName(I))} · ${esc(b.n)}</h3><p>${esc(I.tag)}。${b.f?'這裡的館藏特色是「'+esc(b.f)+'」。':''}</p>
+     <div class="mrow"><button class="btn ghost" type="button" id="qa">再測一次</button><button class="btn" type="button" id="qg">飛過去 →</button></div>`;
+    $('qa').onclick=openQuiz;$('qg').onclick=()=>{$('scrim').hidden=true;select(ii,bi)};
+  }
+  const mx=$('mx');if(mx)mx.onclick=()=>$('scrim').hidden=true;
+}
+const TOUR=[['Hello, Taipei / 01','每座島是一個行政區','14 座六角形小島拼成臺北，島上每棟小房子是一個北市圖服務據點，共 '+TOTAL+' 處。點一座島，或從清單挑一個。'],
+ ['Live / 02','燈亮著，就是開著','屋頂小燈依官網開館時間即時變色：綠色開放、黃色快閉館、青色夜間自助、灰色休息。插小紅旗的館有近期活動。'],
+ ['Book / 03','輸入一本書，航向有它的島','在清單上方輸入喜歡的書，會到北市圖館藏系統查出哪幾館有、現在在不在架上，再派一艘金色小船開過去。「服務」分頁可以依設施找館。']];
+let tk=0;
+function openTour(k){tk=k||0;$('scrim').hidden=false;const [e,h,p]=TOUR[tk];
+  $('modal').innerHTML=`<div class="eyebrow">${esc(e)}</div><h3>${esc(h)}</h3><p>${esc(p)}</p><div class="mrow"><button class="btn ghost" type="button" id="ts">略過</button><div class="dots">${TOUR.map((_,j)=>`<i class="${j===tk?'on':''}"></i>`).join('')}</div><button class="btn" type="button" id="tn">${tk<TOUR.length-1?'下一步 →':'開始探索'}</button></div>`;
+  $('ts').onclick=endTour;$('tn').onclick=()=>tk<TOUR.length-1?openTour(tk+1):endTour()}
+function endTour(){$('scrim').hidden=true;try{localStorage.setItem('ra-tour2','1')}catch(e){}}
+
+/* ================= 找書航行 ================= */
+const CAT='https://book.tpml.edu.tw';
+const searchURL=q=>CAT+'/search?searchField='+(/^[\dXx-]{10,17}$/.test(q.trim())?'ISBN':'TI')+'&searchInput='+encodeURIComponent(q.trim());
+const BK={busy:false,ctl:null,tab:null,mode:null,q:'',title:'',editions:[],pick:0,rows:[],by:[],steps:[],err:'',at:'',topic:null};
+const sleep=(ms,sig)=>new Promise((res,rej)=>{const h=setTimeout(res,ms);sig&&sig.addEventListener('abort',()=>{clearTimeout(h);rej({code:'cancelled'})},{once:true})});
+const txtOf=r=>{if(!r)return'';if(typeof r.payload==='string')return r.payload;return(r.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n')};
+let MCP=null,HOST=false,SAMPLE=null;
+(async()=>{try{MCP=await window.claude?.use?.('mcp');if(MCP){const l=await MCP.listTools().catch(()=>null);HOST=!!l?.servers?.some(s=>s.server==='host:claude_browser')}}catch(e){}
+  try{SAMPLE=await window.claude?.use?.('sample')}catch(e){}
+  const h=$('bookHint');if(h)h.textContent=HOST?'會用你的 Claude 瀏覽器到北市圖館藏系統即時查詢各館冊數。':SAMPLE?'這個畫面無法連館藏系統，會依書的主題推薦島嶼，並附上館藏查詢連結。':'會附上北市圖館藏查詢連結，並用館藏特色推薦島嶼。'})();
+async function host(tool,input,sig){return MCP.callTool('host:claude_browser',tool,input,{signal:sig})}
+/* 館藏地 → 據點 */
+const CORE=[];ISLANDS.forEach((I,i)=>I.b.forEach((b,bi)=>{const c=b.n.replace(/(先生紀念圖書館|紀念圖書館|分館替代服務處|分館|民眾閱覽室|兒童圖書館|數位圖書館|智慧圖書館|借還書工作站|圖書館)$/,'');CORE.push({c,i,bi,n:b.n})}));CORE.sort((a,b)=>b.c.length-a.c.length);
+function locToBranch(loc){const s=loc.replace(/^[A-Z]+\d+/,'').split(/[\/(（]/)[0].trim();const m=CORE.find(x=>s.startsWith(x.c));return m?{...m,short:s}:{c:s,i:-1,bi:-1,n:s,short:s}}
+function parseSearch(text){const out=[];const parts=text.split(/\n(\d+)\.\n/);for(let k=1;k<parts.length;k+=2){const lines=parts[k+1].split('\n').map(x=>x.trim()).filter(Boolean);
+  const cm=parts[k+1].match(/館藏數量\s*:\s*(\d+)\s*書在館\s*:\s*(\d+)\s*外借數量\s*:\s*(\d+)\s*可預約數量\s*:\s*(\d+)\s*預約等待人數\s*:\s*(\d+)/);
+  const au=(lines.find(l=>l.startsWith('作者：'))||'').slice(3),pub=(lines.find(l=>l.startsWith('出版項：'))||'').slice(4);
+  out.push({type:lines[0],title:lines[1]||'',au,pub,total:cm?+cm[1]:0,shelf:cm?+cm[2]:0,out:cm?+cm[3]:0,wait:cm?+cm[5]:0})}return out}
+function parseHoldings(text){const rows=[];const re=/館藏地\t館藏類型\t索書號\t狀態\/到期日\t備註\n([\s\S]*?)(?:\n(?:線上取用|點擊此處|匯出|書籍簡介)|$)/g;let m;
+  while((m=re.exec(text))){m[1].split('\n').forEach(l=>{const f=l.split('\t');if(f.length>=4&&/[A-Z]\d+/.test(f[0]))rows.push({loc:f[0].trim(),type:f[1].trim(),call:f[2].trim(),st:f[3].trim()})})}return rows}
+function step(s){BK.steps.push(s);renderBook()}
+async function waitText(tab,ok,sig,tries=10){for(let k=0;k<tries;k++){const t=txtOf(await host('get_page_text',{tabId:tab,max_chars:30000},sig));if(ok(t))return t;await sleep(1000,sig)}throw{code:'timeout'}}
+async function lookupHost(q,sig){
+  const url=searchURL(q);
+  step('打開北市圖館藏查詢系統');
+  if(!BK.tab){const r=txtOf(await host('preview_start',{url},sig));const m=r.match(/tabId\s+([\w-]+)/);BK.tab=m?m[1]:null}else await host('navigate',{url,tabId:BK.tab},sig);
+  const t=await waitText(BK.tab,x=>/總共\d+筆/.test(x)||/查無|沒有符合/.test(x),sig);
+  const ed=parseSearch(t);const f=txtOf(await host('find',{query:'詳細資料',tabId:BK.tab},sig));const ids=[...f.matchAll(/bookDetail\/(\d+)/g)].map(x=>x[1]);
+  ed.forEach((e,k)=>e.id=ids[k]);const books=ed.filter(e=>e.type==='圖書'&&e.id);
+  step(`找到 ${(t.match(/總共(\d+)筆/)||[0,0])[1]} 筆，挑選館藏最多的圖書版本`);
+  if(!books.length){BK.editions=[];throw{code:'none'}}
+  const ql=q.replace(/\s/g,'');books.forEach(b=>b.score=(b.title.replace(/\s/g,'').startsWith(ql)?50:0)+b.total);
+  BK.editions=books.slice(0,8).sort((a,b)=>b.score-a.score).slice(0,5);BK.pick=0;
+  await loadEdition(BK.editions[0],sig);
+}
+async function loadEdition(e,sig){
+  BK.title=e.title;BK.rows=[];BK.detail=CAT+'/bookDetail/'+e.id;renderBook();
+  step('讀取「'+e.title.split(/[\/:=]/)[0].trim()+'」的各館館藏');
+  await host('navigate',{url:BK.detail,tabId:BK.tab},sig);
+  await waitText(BK.tab,x=>/冊數\/卷期[\s\S]*預約等待人數[\s\S]*\n\t?\S/.test(x)&&!/正在載入中/.test(x),sig);
+  const f=txtOf(await host('find',{query:'一般館藏',tabId:BK.tab},sig));const ref=(f.match(/\[(ref_\d+)\]/)||[])[1];
+  if(ref)await host('computer',{action:'scroll_to',ref,tabId:BK.tab},sig);
+  const rp=txtOf(await host('read_page',{tabId:BK.tab,filter:'interactive',max_chars:8000},sig));
+  const seg=rp.split(/checkbox "\d+"/).slice(1).map(s=>s.split(/點擊此處|社群分享|link "線上取用"/)[0]).join('\n');
+  const refs=[...seg.matchAll(/link "(\d+)" \[(ref_\d+)\]/g)].map(x=>x[2]).slice(0,8);
+  const seen=new Set();
+  for(const r of refs){await host('computer',{action:'left_click',ref:r,tabId:BK.tab,action_summary:'展開這本書的館藏地清單'},sig);await sleep(1200,sig);
+    const t=txtOf(await host('get_page_text',{tabId:BK.tab,max_chars:30000},sig));parseHoldings(t).forEach(x=>{const k=x.loc+'|'+x.call+'|'+x.st;if(!seen.has(k)){seen.add(k);BK.rows.push(x)}})}
+  BK.at=fm(tp(new Date()).min);aggregate();step(BK.rows.length?`讀到 ${BK.rows.length} 冊的館藏地`:'這個版本目前沒有可列出的館藏地');
+}
+function aggregate(){const m=new Map();BK.rows.forEach(r=>{const b=locToBranch(r.loc);const k=b.n;const o=m.get(k)||{...b,shelf:0,out:0,other:0,due:[]};
+  if(/書在館/.test(r.st))o.shelf++;else if(/外借/.test(r.st)){o.out++;const d=(r.st.match(/\d{4}-\d{2}-\d{2}/)||[])[0];if(d)o.due.push(d)}else o.other++;m.set(k,o)});
+  const t=nowT();BK.by=[...m.values()].map(o=>({...o,due:o.due.sort()[0]||'',open:o.i>=0?isOpen(status(ISLANDS[o.i].b[o.bi],t).s):false}))
+    .sort((a,b)=>(b.shelf>0)-(a.shelf>0)||(b.open-a.open)||b.shelf-a.shelf||(b.out+b.other)-(a.out+a.other));
+  S.bookHits={};BK.by.forEach(o=>{if(o.i>=0)S.bookHits[o.n]=o});tick();}
+async function lookupTopic(q,sig){
+  BK.mode='topic';step('請 Claude 判斷這本書的主題');
+  const list=[];ISLANDS.forEach(I=>I.b.forEach(b=>{if(b.f&&!b.closed)list.push(b.n+'｜'+b.f)}));
+  const ans=await SAMPLE.json(`讀者輸入了一本喜歡的書：「${q}」。\n下面是臺北市立圖書館各分館的館藏特色（分館｜特色）：\n${list.join('\n')}\n\n請判斷這本書的主題，從清單中挑出 1 到 3 間館藏特色最相關的分館。分館名稱必須和清單完全一樣，不要編造書的內容或作者；不確定這本書是什麼時，就依書名字面判斷並在 subject 說明。只回覆 JSON：{"subject":"一句話說明主題","picks":[{"n":"分館名稱","why":"一句話理由"}]}`,{modelTier:'quick',signal:sig});
+  const ok=[];(ans?.picks||[]).forEach(p=>{const c=CORE.find(x=>x.n===String(p.n));if(c&&!ISLANDS[c.i].b[c.bi].closed&&!ok.some(o=>o.n===c.n))ok.push({...c,why:String(p.why||'').slice(0,80)})});
+  BK.topic={subject:String(ans?.subject||'').slice(0,120),picks:ok.slice(0,3)};S.bookHits={};ok.forEach(o=>S.bookHits[o.n]={...o,topic:1});tick();
+  step(ok.length?'找到主題相近的島':'沒有找到合適的島');
+}
+function lookupLocal(q){BK.mode='topic';const hits=CORE.filter(c=>{const b=ISLANDS[c.i].b[c.bi];return b.f&&!b.closed&&(q.includes(b.f)||b.f.split('').filter(ch=>q.includes(ch)).length>=2)}).slice(0,3);
+  BK.topic={subject:'依書名文字比對館藏特色',picks:hits.map(h=>({...h,why:'館藏特色：'+ISLANDS[h.i].b[h.bi].f}))};S.bookHits={};hits.forEach(o=>S.bookHits[o.n]={...o,topic:1});tick()}
+async function startBook(q){
+  q=q.trim();if(!q)return;if(BK.ctl)BK.ctl.abort();const ctl=new AbortController();BK.ctl=ctl;
+  Object.assign(BK,{busy:true,q,title:'',editions:[],rows:[],by:[],steps:[],err:'',topic:null,mode:HOST?'host':'topic'});S.bookHits=null;openBook();
+  try{
+    if(HOST){try{await lookupHost(q,ctl.signal)}catch(e){if(e.code==='server_not_connected'||e.code==='not_in_manifest'||e.code==='capability_disabled'||e.code==='not_granted'){HOST=false;BK.mode='topic';if(SAMPLE)await lookupTopic(q,ctl.signal);else lookupLocal(q)}else throw e}}
+    else if(SAMPLE)await lookupTopic(q,ctl.signal);else lookupLocal(q);
+    sailToBest();
+  }catch(e){BK.err=errCopy(e)}
+  finally{if(BK.ctl===ctl){BK.busy=false;BK.ctl=null}renderBook()}
+}
+function errCopy(e){const c=e&&e.code;return c==='cancelled'?'已停止。':c==='none'?'館藏系統找不到這本書的紙本圖書，試試完整書名、作者或 ISBN。':c==='timeout'?'館藏系統回應太慢，稍後再試一次。':c==='approval_required'?'需要你允許網頁使用瀏覽器，按「重新查詢」再試一次。':c==='rate_limited'?'查詢太頻繁，等一下再試。':c==='not_granted'||c==='sampling_disabled'?'這個畫面無法使用 Claude 推薦，請用下方連結到館藏系統查詢。':c==='invalid_json'||c==='refused'||c==='empty_completion'?'沒能判斷這本書的主題，換個寫法試試。':'查詢中斷了（'+(c||'未知錯誤')+'），可以再試一次。'}
+function sailToBest(){const ok=BK.by.filter(o=>o.i>=0);const best=BK.mode==='host'?(ok.find(o=>o.shelf&&o.open)||ok.find(o=>o.shelf)||ok.find(o=>o.open)||ok[0]):BK.topic?.picks?.[0];if(!best)return;sail(best.i);}
+function sail(i){if(!W3.ok)return;focusIsland(i);S.sel=-1;
+  if(W3.quest){W3.scene.remove(W3.quest.b);W3.quest=null}
+  const p=W3.paths.find(x=>x.b===i);if(!p)return;const b=W3.boats[0].b.clone();b.scale.setScalar(2.1);
+  b.traverse(o=>{if(o.isMesh&&o.geometry.type==='BoxGeometry'&&o.position.y>.8){o.material=new THREE.MeshStandardMaterial({color:0xF5B921,emissive:0xF5B921,emissiveIntensity:.6})}});
+  W3.scene.add(b);W3.quest={b,p,u:0}}
+function openBook(){S.sel=-1;labEls.forEach(l=>l.classList.remove('sel'));renderBook();if(innerWidth<=760)$('index').classList.add('min')}
+function renderBook(){
+  const el=$('detail');el.hidden=false;el.dataset.mode='book';const t=nowT();
+  const head=`<button class="x" type="button" id="dx" aria-label="關閉">×</button><div class="dh"><div class="eyebrow">Book Voyage · ${BK.mode==='host'?'即時館藏':'主題航線'}</div><h3>${esc(BK.title?BK.title.split(' / ')[0]:'「'+BK.q+'」')}</h3>
+    ${BK.title?`<div class="tag">${esc((BK.editions[BK.pick]||{}).au||'')}${(BK.editions[BK.pick]||{}).pub?' · '+esc(BK.editions[BK.pick].pub):''}</div>`:''}
+    <div class="steps">${BK.steps.map((s,k)=>`<span class="${k===BK.steps.length-1&&BK.busy?'now':''}">${esc(s)}</span>`).join('')}${BK.busy?'<button type="button" class="linkbtn" id="bkStop">停止</button>':''}</div></div>`;
+  let body='';
+  if(BK.mode==='host'&&BK.editions.length>1)body+=`<div class="sect">其他版本</div><div class="fchips">${BK.editions.map((e,k)=>`<button type="button" class="fchip" data-ed="${k}" aria-pressed="${k===BK.pick}">${esc(e.pub.split(',').pop()||e.title.slice(0,8))} · ${e.total} 冊</button>`).join('')}</div>`;
+  if(BK.mode==='host'&&BK.by.length){const tot=BK.by.reduce((a,o)=>({s:a.s+o.shelf,o:a.o+o.out,x:a.x+o.other}),{s:0,o:0,x:0});const ed=BK.editions[BK.pick]||{};
+    body+=`<div class="chips"><span class="chip"><span class="od" style="background:${tot.s?SCOL.open:SCOL.closed}"></span>在架 ${tot.s}</span><span class="chip">外借 ${tot.o}</span><span class="chip">調撥/展覽 ${tot.x}</span>${ed.wait?`<span class="chip">預約等待 ${ed.wait} 人</span>`:''}</div>
+    <p class="th" style="margin:0">${tot.s?'有館現在架上就有，船已經開往最近能借到的那座島。':'目前每一冊都不在架上，可以預約，書到後選一座方便的島取書。'}</p><div class="sect">有這本書的據點</div>`;
+    body+=BK.by.map(o=>{const isl=o.i>=0?ISLANDS[o.i]:null;const st=isl?status(isl.b[o.bi],t):null;
+      return`<div class="bitem"><div class="top"><b>${esc(o.n)}</b>${st?`<span class="st ${st.s}">${esc(st.label)}</span>`:''}</div>
+      <div class="th">${isl?esc(islName(isl)):'未對應到島嶼'} · ${o.shelf?`<b style="color:#226B3A">在架 ${o.shelf}</b>`:'在架 0'}${o.out?` · 外借 ${o.out}${o.due?'（最早 '+o.due.slice(5).replace('-','/')+' 到期）':''}`:''}${o.other?` · 調撥/展覽 ${o.other}`:''}</div>
+      ${isl?`<div class="lk"><button type="button" class="linkbtn" data-go="${o.i}" data-b="${o.bi}" style="padding:0">⛵ 航向這座島</button></div>`:''}</div>`}).join('');
+    body+=`<p class="foot" style="margin:0">館藏讀自北市圖館藏查詢系統（${esc(BK.at)}）。<a href="${BK.detail}" target="_blank" rel="noopener">到館藏系統預約 ↗</a></p>`;
+  }
+  if(BK.mode==='topic'&&BK.topic){body+=`<div class="nt">這個畫面不能連到館藏系統，以下是依主題推薦的島，不代表一定有這本書。要確認哪一館有書，請用下方連結。</div>${BK.topic.subject?`<p class="th" style="margin:0">${esc(BK.topic.subject)}</p>`:''}`;
+    body+=BK.topic.picks.map(o=>{const b=ISLANDS[o.i].b[o.bi];const st=status(b,t);return`<div class="bitem"><div class="top"><b>${esc(o.n)}</b><span class="st ${st.s}">${esc(st.label)}</span></div><div class="th">${esc(islName(ISLANDS[o.i]))} · ${esc(o.why)}</div><div class="lk"><button type="button" class="linkbtn" data-go="${o.i}" data-b="${o.bi}" style="padding:0">⛵ 航向這座島</button></div></div>`}).join('')||'<p class="th">沒有找到館藏特色相近的島。</p>';
+  }
+  if(BK.err)body+=`<div class="nt">${esc(BK.err)}</div>${BK.busy?'':'<button type="button" class="btn ghost" id="bkRetry" style="align-self:flex-start">重新查詢</button>'}`;
+  if(BK.q)body+=`<p class="foot" style="margin:0"><a href="${searchURL(BK.q)}" target="_blank" rel="noopener">在北市圖館藏系統搜尋「${esc(BK.q)}」 ↗</a></p>`;
+  el.innerHTML=head+`<div class="db">${body}</div>`;
+  $('dx').onclick=()=>{if(BK.ctl)BK.ctl.abort();S.bookHits=null;el.dataset.mode='';closeDetail();tick()};
+  const st=$('bkStop');if(st)st.onclick=()=>BK.ctl&&BK.ctl.abort();
+  const rt=$('bkRetry');if(rt)rt.onclick=()=>startBook(BK.q);
+  el.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>sail(+b.dataset.go));
+  el.querySelectorAll('[data-ed]').forEach(b=>b.onclick=async()=>{if(BK.busy)return;const k=+b.dataset.ed;BK.pick=k;BK.busy=true;BK.err='';const ctl=new AbortController();BK.ctl=ctl;
+    try{await loadEdition(BK.editions[k],ctl.signal);sailToBest()}catch(e){BK.err=errCopy(e)}finally{BK.busy=false;BK.ctl=null;renderBook()}});
+}
+
+/* wire */
+$('q').addEventListener('input',e=>{S.query=e.target.value;renderList()});
+$('bookForm').addEventListener('submit',e=>{e.preventDefault();startBook($('bookQ').value)});
+function setTab(k){S.tab=k;['isl','open','svc'].forEach(x=>$('tab-'+x).setAttribute('aria-pressed',x===k));renderList()}
+['isl','open','svc'].forEach(k=>$('tab-'+k).onclick=()=>setTab(k));
+$('bHome').onclick=()=>{closeDetail();S.bird=false;renderTools();home()};
+$('bQuiz').onclick=openQuiz;$('quizCard').onclick=openQuiz;$('bHelp').onclick=()=>openTour(0);
+$('bList').onclick=()=>{const ix=$('index');if(innerWidth<=760){ix.hidden=false;ix.classList.toggle('min')}else ix.hidden=!ix.hidden;
+  $('bList').setAttribute('aria-pressed',!ix.hidden&&!ix.classList.contains('min'));document.querySelector('.corner').style.right=(innerWidth>760&&ix.hidden)?'calc(12px + var(--sr))':''};
+$('grab').onclick=()=>$('index').classList.toggle('min');
+$('scrim').addEventListener('click',e=>{if(e.target.id==='scrim')$('scrim').hidden=true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('scrim').hidden)$('scrim').hidden=true;else if(S.sel>=0)closeDetail()}});
+
+makeLabels();
+const ok=init3d();
+if(!ok){$('stage').innerHTML='<div class="nogl"><div><h3>這台裝置無法顯示 3D 群島</h3><p style="color:var(--muted)">清單和島嶼資訊仍然可以用，從右側（手機在下方）選一座島。</p></div></div>';$('labels').hidden=true;$('toolBar').hidden=true}
+renderTools();tick();setInterval(tick,30000);
+let seen=false;try{seen=!!localStorage.getItem('ra-tour2')}catch(e){}
+if(!seen)openTour(0);
+
+</script>
+
+</body></html>
